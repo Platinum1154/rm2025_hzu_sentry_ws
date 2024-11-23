@@ -21,7 +21,7 @@ ros2 launch map_tools amcl_launch.py
 
 
 # 上发整合版（无amcl）#
-ros2 launch bot_navigation2 test_all.launch.py
+ 
 
 
 # 地图保存 #

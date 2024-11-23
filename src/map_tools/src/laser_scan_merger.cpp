@@ -6,6 +6,8 @@
 #include <pcl/filters/crop_box.h>
 #include <pcl/point_types.h>
 #include <pcl/point_cloud.h>
+#include <pcl/common/transforms.h>
+#include <Eigen/Dense>
 
 class LaserScanMerger : public rclcpp::Node {
 public:
@@ -41,14 +43,29 @@ private:
     }
 
     // 回调函数，处理第二个 LaserScan 话题
-    void scan2Callback(const sensor_msgs::msg::LaserScan::SharedPtr scan2) {
-        projector_.projectLaser(*scan2, cloud2_);  // 将 LaserScan 转换为 PointCloud2
-        pcl::fromROSMsg(cloud2_, *pcl_cloud2_);    // 将 PointCloud2 转换为 PCL 点云
-        point_cloud_2_pub_->publish(cloud2_);
-        //transformPointCloud(pcl_cloud1_, 0.23, 0.0, 0.0); // 对点云进行平移变换，x轴向右平移23cm
-        mergeAndPublish();                         // 尝试合并点云并发布
-    }
+void scan2Callback(const sensor_msgs::msg::LaserScan::SharedPtr scan2) {
+    // 将 LaserScan 转换为 PointCloud2
+    projector_.projectLaser(*scan2, cloud2_);
 
+    // 将 PointCloud2 转换为 PCL 点云
+    pcl::fromROSMsg(cloud2_, *pcl_cloud2_);
+
+    // 创建旋转变换矩阵
+    Eigen::Affine3f transform = Eigen::Affine3f::Identity();
+    transform.rotate(Eigen::AngleAxisf(M_PI, Eigen::Vector3f::UnitZ())); // 绕 Z 轴旋转 180 度
+
+    // 应用旋转变换
+    pcl::transformPointCloud(*pcl_cloud2_, *pcl_cloud2_, transform);
+
+    // 转换回 PointCloud2
+    pcl::toROSMsg(*pcl_cloud2_, cloud2_);
+
+    // 发布点云
+    point_cloud_2_pub_->publish(cloud2_);
+
+    // 尝试合并点云并发布
+    mergeAndPublish();
+}
     // 合并两个点云并发布为新的 LaserScan
     void mergeAndPublish() {
         if (pcl_cloud1_->empty() || pcl_cloud2_->empty()) {
@@ -67,8 +84,8 @@ private:
         RCLCPP_INFO(this->get_logger(), "Before filter Point Cloud size: %zu", merged_pcl_cloud.size());
         
         //滤波器
-        Eigen::Vector4f min_point(-0.25, -0.15, -1000.0, 1.0); // 正方形的最小点 (x_min, y_min, z_min)
-        Eigen::Vector4f max_point(0.05, 0.15, 1000.0, 1.0);    // 正方形的最大点 (x_max, y_max, z_max)
+        Eigen::Vector4f min_point(-0.15, -0.15, -1000.0, 1.0); // 正方形的最小点 (x_min, y_min, z_min)
+        Eigen::Vector4f max_point(0.40, 0.35, 1000.0, 1.0);    // 正方形的最大点 (x_max, y_max, z_max)
 
         // 创建CropBox滤波器
         pcl::CropBox<pcl::PointXYZ> crop_box_filter;
