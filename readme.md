@@ -21,7 +21,7 @@ ros2 launch map_tools amcl_launch.py
 
 
 # 上发整合版（无amcl）#
-ros2 launch turtlebot3_navigation2 test_all.launch.py
+ros2 launch bot_navigation2 test_all.launch.py
 
 
 # 地图保存 #
@@ -48,7 +48,7 @@ colcon build --packages-select map_tools
 <!-- colcon build -->
 
 # 导航 #
-ros2 launch turtlebot3_navigation2 navigation2.launch.py use_sim_time:=False slam:=False map:=/home/morefine/rm2025_hzu_sentry_ws/src/map_tools/maps/slam_map.yaml
+ros2 launch bot_navigation2 navigation2.launch.py use_sim_time:=False slam:=False map:=/home/morefine/rm2025_hzu_sentry_ws/src/map_tools/maps/slam_map.yaml
 
 # 导航数据打包成自定义消息 #
 ros2 run map_tools cmd_vel2serial.py

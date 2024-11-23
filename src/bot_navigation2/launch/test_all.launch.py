@@ -19,7 +19,7 @@ def generate_launch_description():
     odometry_pkg_share = FindPackageShare(package='rf2o_laser_odometry').find('rf2o_laser_odometry')
     odometry_launch_file_path = os.path.join(odometry_pkg_share, 'launch', 'rf2o_laser_odometry.launch.py')
     
-    # turtlebot_pkg_share = FindPackageShare(package='turtlebot3_navigation2').find('turtlebot3_navigation2')
+    # turtlebot_pkg_share = FindPackageShare(package='bot_navigation2').find('bot_navigation2')
     # navigation_launch_file_path = os.path.join(turtlebot_pkg_share, 'launch', 'navigation2.launch.py')
 
     # 创建包含描述

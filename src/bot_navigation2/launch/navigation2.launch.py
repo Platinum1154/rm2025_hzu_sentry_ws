@@ -24,7 +24,7 @@ from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
 
-TURTLEBOT3_MODEL = 'burger'
+TURTLEBOT3_MODEL = 'RobotModel'
 
 
 def generate_launch_description():
@@ -32,7 +32,7 @@ def generate_launch_description():
     map_dir = LaunchConfiguration(
         'map',
         default=os.path.join(
-            get_package_share_directory('turtlebot3_navigation2'),
+            get_package_share_directory('bot_navigation2'),
             'map',
             'map.yaml'))
 
@@ -40,7 +40,7 @@ def generate_launch_description():
     param_dir = LaunchConfiguration(
         'params_file',
         default=os.path.join(
-            get_package_share_directory('turtlebot3_navigation2'),
+            get_package_share_directory('bot_navigation2'),
             'param',
             param_file_name))
 
@@ -83,3 +83,4 @@ def generate_launch_description():
             parameters=[{'use_sim_time': use_sim_time}],
             output='screen'),
     ])
+ 
