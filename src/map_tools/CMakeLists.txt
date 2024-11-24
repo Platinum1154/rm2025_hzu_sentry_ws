@@ -11,10 +11,12 @@ find_package(pcl_ros REQUIRED)
 find_package(PCL REQUIRED)
 find_package(rm_interfaces REQUIRED)
 find_package(std_msgs REQUIRED)
+find_package(serial REQUIRED)
 
 
 add_executable(merger_node src/laser_scan_merger.cpp)
 add_executable(save_point_cloud src/save_point_cloud.cpp)
+add_executable(serial_port src/serial_port.cpp)
 # add_executable(cmd_vel2serial src/cmd_vel2serial.cpp)
 
 
@@ -39,6 +41,17 @@ ament_target_dependencies(save_point_cloud
   std_msgs
 )
 
+ament_target_dependencies(serial_port 
+  rclcpp 
+  sensor_msgs 
+  laser_geometry 
+  pcl_ros 
+  PCL
+  rm_interfaces
+  std_msgs
+  serial
+)
+
 # ament_target_dependencies(cmd_vel2serial
 #   rclcpp 
 #   sensor_msgs 
@@ -53,6 +66,7 @@ ament_target_dependencies(save_point_cloud
 
 
 install(TARGETS
+  serial_port
   merger_node
   save_point_cloud
   # cmd_vel2serial
