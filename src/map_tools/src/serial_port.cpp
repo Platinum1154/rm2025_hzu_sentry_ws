@@ -4,6 +4,7 @@
 #include <serial/serial.h>
 #include <vector>
 #include "rclcpp/rclcpp.hpp"
+#include "rm_interfaces/msg/navigation_msg.hpp"
 
 #define BAUDRATE 9600
 
@@ -15,6 +16,9 @@ class SerialDriverNode : public rclcpp::Node
 public:
     SerialDriverNode(const char *nodeName) : Node(nodeName)
     {
+        // 接收nav/control的数据
+        sub_ = this->create_subscription<rm_interfaces::msg::NavigationMsg>(
+            "/nav/control", 10, std::bind(&SerialDriverNode::callback, this, std::placeholders::_1));
         // 获取串口名称
         _port_name = this->declare_parameter("~port_name", "/dev/ttyUSB2");
 
@@ -124,6 +128,14 @@ private:
         }
         printf("\n");
     }
+    void callback(const rm_interfaces::msg::NavigationMsg::SharedPtr msg) {
+        // 打印接收到的导航消息
+        RCLCPP_INFO(this->get_logger(), "Received NavigationMsg: \n  Linear Velocity X: %.2f\n  Linear Velocity Y: %.2f\n  Angular Velocity Z: %.2f",
+                    msg->linear_velocity_x,
+                    msg->linear_velocity_y,
+                    msg->angular_velocity_z);
+    }
+    rclcpp::Subscription<rm_interfaces::msg::NavigationMsg>::SharedPtr sub_;
 
     serial::Serial serial_port_;
     std::string _port_name;
