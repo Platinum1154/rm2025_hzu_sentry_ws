@@ -21,7 +21,7 @@ ros2 launch map_tools amcl_launch.py
 
 
 # 上发整合版（无amcl）#
- 
+ros2 launch bot_navigation2 test_all.launch.py
 
 
 # 地图保存 #
@@ -53,7 +53,9 @@ ros2 launch bot_navigation2 navigation2.launch.py use_sim_time:=False slam:=Fals
 # 导航数据打包成自定义消息 #
 ros2 run map_tools cmd_vel2serial.py
 
-# 开启串口 #
+# 开启串口 #（假串口）
 ros2 run rm_serial_python rm_serial_node 
 
+# 真串口
+ros2 run map_tools serial_port 
 
