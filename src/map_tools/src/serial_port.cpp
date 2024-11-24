@@ -11,6 +11,9 @@
 std::atomic_bool receive_thread_running;
 std::atomic_bool send_thread_running;
 
+
+
+
 class SerialDriverNode : public rclcpp::Node
 {
 public:
@@ -75,15 +78,15 @@ private:
                 uint8_t data;
                 serial_port_.read(&data, 1);
                 buffer.push_back(data);
-
-                if (buffer.size() >= 4 && buffer[0] == 0x55)
+                //这里的buffer.size()>=包长
+                if (buffer.size() >= 4 && buffer[0] == 0x67)
                 {
                     std::vector<uint8_t> packet(buffer.begin(), buffer.begin() + 4);
                     processPacket(packet);
 
                     buffer.clear();
                 }
-                else if (buffer[0] != 0x55)
+                else if (buffer[0] != 0x67)
                 {
                     buffer.clear();
                 }
@@ -105,17 +108,17 @@ private:
 
     void sendCommand()
     {
-        // 定义固定内容的命令
-        std::vector<uint8_t> command = {0xA1, 0xB2, 0xC3, 0xD4}; // 替换为你的实际命令
         try
         {
-            serial_port_.write(command);
-            RCLCPP_INFO(this->get_logger(), "Command sent: A1 B2 C3 D4");
+            serial_port_.write(control);
+            RCLCPP_INFO(this->get_logger(), "Command sent is OK");
         }
         catch (const serial::IOException &e)
         {
             RCLCPP_ERROR(this->get_logger(), "Failed to send command.");
         }
+        control.clear();
+        control.push_back(0x67);
     }
 
     // 处理数据包
@@ -134,8 +137,25 @@ private:
                     msg->linear_velocity_x,
                     msg->linear_velocity_y,
                     msg->angular_velocity_z);
+        floatToHexBytes(msg->linear_velocity_x,control);
+        floatToHexBytes(msg->linear_velocity_y,control);
+        floatToHexBytes(msg->angular_velocity_z,control);
+
+    }
+    // 将 float32 转换为多个 uint8_t 并加入到 std::vector<uint8_t> 中
+    void floatToHexBytes(float input, std::vector<uint8_t>& output) {
+        // 创建一个 uint8_t 数组来保存 float 的字节表示
+        uint8_t bytes[sizeof(float)];
+        // 使用 memcpy 将 float 的内存数据拷贝到 uint8_t 数组中
+        std::memcpy(bytes, &input, sizeof(float));
+
+        // 将每一字节添加到 vector 中
+        for (size_t i = 0; i < sizeof(float); ++i) {
+            output.push_back(bytes[i]);
+        }
     }
     rclcpp::Subscription<rm_interfaces::msg::NavigationMsg>::SharedPtr sub_;
+    std::vector<uint8_t> control;
 
     serial::Serial serial_port_;
     std::string _port_name;
