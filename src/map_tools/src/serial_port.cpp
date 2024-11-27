@@ -6,7 +6,7 @@
 #include "rclcpp/rclcpp.hpp"
 #include "rm_interfaces/msg/navigation_msg.hpp"
 
-#define BAUDRATE 9600
+#define BAUDRATE 115200
 
 std::atomic_bool receive_thread_running;
 std::atomic_bool send_thread_running;
@@ -23,7 +23,7 @@ public:
         sub_ = this->create_subscription<rm_interfaces::msg::NavigationMsg>(
             "/nav/control", 10, std::bind(&SerialDriverNode::callback, this, std::placeholders::_1));
         // 获取串口名称
-        _port_name = this->declare_parameter("~port_name", "/dev/ttyUSB2");
+        _port_name = this->declare_parameter("~port_name", "/dev/ttyUSB0");
 
         // 初始化串口
         try
@@ -79,19 +79,19 @@ private:
                 serial_port_.read(&data, 1);
                 buffer.push_back(data);
                 //这里的buffer.size()>=包长
-                if (buffer.size() >= 4 && buffer[0] == 0x67)
+                if (buffer.size() >= 27 && buffer[0] == 0x4A)
                 {
-                    std::vector<uint8_t> packet(buffer.begin(), buffer.begin() + 4);
+                    std::vector<uint8_t> packet(buffer.begin(), buffer.begin() + 27);
                     processPacket(packet);
 
                     buffer.clear();
                 }
-                else if (buffer[0] != 0x67)
+                else if (buffer[0] != 0x4A)
                 {
-                    buffer.clear();
+                   buffer.clear();
                 }
             }
-            std::this_thread::sleep_for(std::chrono::milliseconds(10)); // 减少CPU占用
+            std::this_thread::sleep_for(std::chrono::milliseconds(1)); // 减少CPU占用
         }
     }
 
@@ -102,7 +102,7 @@ private:
         while (rclcpp::ok() && send_thread_running.load())
         {
             sendCommand();
-            std::this_thread::sleep_for(std::chrono::milliseconds(1000)); // 每隔1秒发送一次
+            std::this_thread::sleep_for(std::chrono::milliseconds(10)); // 每隔0.01秒发送一次
         }
     }
 
@@ -118,7 +118,6 @@ private:
             RCLCPP_ERROR(this->get_logger(), "Failed to send command.");
         }
         control.clear();
-        control.push_back(0x67);
     }
 
     // 处理数据包
@@ -131,15 +130,20 @@ private:
         }
         printf("\n");
     }
+    float i =0;
     void callback(const rm_interfaces::msg::NavigationMsg::SharedPtr msg) {
+        control.push_back((uint8_t)0xA4);
         // 打印接收到的导航消息
-        RCLCPP_INFO(this->get_logger(), "Received NavigationMsg: \n  Linear Velocity X: %.2f\n  Linear Velocity Y: %.2f\n  Angular Velocity Z: %.2f",
-                    msg->linear_velocity_x,
-                    msg->linear_velocity_y,
-                    msg->angular_velocity_z);
+        //RCLCPP_INFO(this->get_logger(), "Received NavigationMsg: \n  Linear Velocity X: %.2f\n  Linear Velocity Y: %.2f\n  Angular Velocity Z: %.2f",
+        //            msg->linear_velocity_x,
+        //            msg->linear_velocity_y,
+        //            msg->angular_velocity_z);
+        //floatToHexBytes(i++,control);
         floatToHexBytes(msg->linear_velocity_x,control);
         floatToHexBytes(msg->linear_velocity_y,control);
         floatToHexBytes(msg->angular_velocity_z,control);
+        control.push_back(0x99);
+        control.push_back(0x88);
 
     }
     // 将 float32 转换为多个 uint8_t 并加入到 std::vector<uint8_t> 中

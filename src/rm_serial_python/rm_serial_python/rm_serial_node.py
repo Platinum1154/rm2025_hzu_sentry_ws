@@ -96,7 +96,7 @@ class RMSerialDriver(Node):
                     else:
                         self.get_logger().warn("Received data length mismatch1")
 
-                elif header and header[0] == 0xA4:  # 导航数据
+                elif header and header[0] == 0x4A:  # 导航数据
                     data = self.serial_port.read(24)  # 读取22字节的数据
 
                     if len(data) == 24:
