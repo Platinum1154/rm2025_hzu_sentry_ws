@@ -1,18 +1,14 @@
 #include <iostream>
-#include <chrono>
-#include <thread>
-#include <serial/serial.h>
 #include <vector>
+#include <cstring>
 #include "rclcpp/rclcpp.hpp"
 #include "rm_interfaces/msg/navigation_msg.hpp"
+#include <serial/serial.h>
 
 #define BAUDRATE 115200
 
 std::atomic_bool receive_thread_running;
 std::atomic_bool send_thread_running;
-
-
-
 
 class SerialDriverNode : public rclcpp::Node
 {
@@ -22,6 +18,7 @@ public:
         // 接收nav/control的数据
         sub_ = this->create_subscription<rm_interfaces::msg::NavigationMsg>(
             "/nav/control", 10, std::bind(&SerialDriverNode::callback, this, std::placeholders::_1));
+        
         // 获取串口名称
         _port_name = this->declare_parameter("~port_name", "/dev/ttyUSB0");
 
@@ -78,20 +75,35 @@ private:
                 uint8_t data;
                 serial_port_.read(&data, 1);
                 buffer.push_back(data);
-                //这里的buffer.size()>=包长
-                if (buffer.size() >= 27 && buffer[0] == 0x4A)
+                
+                if (buffer.size() >= 28 && buffer[0] == 0x4A)  // 校验帧头和包的最小长度
                 {
-                    std::vector<uint8_t> packet(buffer.begin(), buffer.begin() + 27);
-                    processPacket(packet);
+                    // 取出最后两个字节作为 CRC 校验码
+                    uint16_t received_crc = ((uint16_t)buffer[25] << 8) | buffer[26];  // CRC 校验码在最后两位
+                    std::vector<uint8_t> packet(buffer.begin(), buffer.begin() + 27);  // 剩余数据部分
+                    
+                    // 计算 CRC 校验码
+                    uint16_t calculated_crc = calculateCRC16(packet);
+                    printf("CRC: %04X %04X\n",received_crc,calculated_crc);
+                    //if (received_crc == calculated_crc)
+                    {
+                        // 如果 CRC 校验通过，处理数据包
+                        processPacket(packet);
+                    }
+                    //else
+                    {
+                        //RCLCPP_ERROR(this->get_logger(), "CRC check failed. Discarding packet.");
+                    }
 
                     buffer.clear();
                 }
                 else if (buffer[0] != 0x4A)
                 {
-                   buffer.clear();
+                    buffer.clear();  // 清除无效数据
                 }
             }
-            std::this_thread::sleep_for(std::chrono::milliseconds(1)); // 减少CPU占用
+            //不能休息！！！控制那边超吊，你休息了就跟不上了
+            //std::this_thread::sleep_for(std::chrono::milliseconds(1)); // 减少CPU占用
         }
     }
 
@@ -111,7 +123,7 @@ private:
         try
         {
             serial_port_.write(control);
-            RCLCPP_INFO(this->get_logger(), "Command sent is OK");
+            //RCLCPP_INFO(this->get_logger(), "Command sent is OK");
         }
         catch (const serial::IOException &e)
         {
@@ -120,44 +132,74 @@ private:
         control.clear();
     }
 
-    // 处理数据包
     void processPacket(const std::vector<uint8_t> &packet)
     {
-        RCLCPP_INFO(this->get_logger(), "Packet received: ");
-        for (const auto &byte : packet)
+
+        // 解析6个32位浮动数
+        float parsed_floats[6];
+        for (int i = 0; i < 6; ++i)
         {
-            printf("%02X ", byte);
+            // 取出每个32位浮动数的4个字节
+            uint8_t bytes[4] = { packet[i*4+1], packet[i*4+2], packet[i*4+3], packet[i*4+4] };
+            std::memcpy(&parsed_floats[i], bytes, sizeof(float));
         }
-        printf("\n");
-    }
-    float i =0;
-    void callback(const rm_interfaces::msg::NavigationMsg::SharedPtr msg) {
-        control.push_back((uint8_t)0xA4);
-        // 打印接收到的导航消息
-        //RCLCPP_INFO(this->get_logger(), "Received NavigationMsg: \n  Linear Velocity X: %.2f\n  Linear Velocity Y: %.2f\n  Angular Velocity Z: %.2f",
-        //            msg->linear_velocity_x,
-        //            msg->linear_velocity_y,
-        //            msg->angular_velocity_z);
-        //floatToHexBytes(i++,control);
-        floatToHexBytes(msg->linear_velocity_x,control);
-        floatToHexBytes(msg->linear_velocity_y,control);
-        floatToHexBytes(msg->angular_velocity_z,control);
-        control.push_back(0x99);
-        control.push_back(0x88);
+
+        // 打印接收到的6个浮动数
+        RCLCPP_INFO(this->get_logger(), "Received floats: ");
+        for (int i = 0; i < 6; ++i)
+        {
+            RCLCPP_INFO(this->get_logger(), "Float %d: %f", i, parsed_floats[i]);
+        }
 
     }
-    // 将 float32 转换为多个 uint8_t 并加入到 std::vector<uint8_t> 中
-    void floatToHexBytes(float input, std::vector<uint8_t>& output) {
-        // 创建一个 uint8_t 数组来保存 float 的字节表示
+
+    float i = 0;
+    
+    void callback(const rm_interfaces::msg::NavigationMsg::SharedPtr msg)
+    {
+        control.push_back((uint8_t)0xA4);  // 设置起始字节
+        floatToHexBytes(msg->linear_velocity_x, control);
+        floatToHexBytes(msg->linear_velocity_y, control);
+        floatToHexBytes(msg->angular_velocity_z, control);
+
+        // 添加 CRC16 校验
+        uint16_t crc = calculateCRC16(control);
+        control.push_back(crc & 0xFF);  // CRC16 LSB
+        control.push_back((crc >> 8) & 0xFF);  // CRC16 MSB
+    }
+
+    void floatToHexBytes(float input, std::vector<uint8_t>& output)
+    {
         uint8_t bytes[sizeof(float)];
-        // 使用 memcpy 将 float 的内存数据拷贝到 uint8_t 数组中
         std::memcpy(bytes, &input, sizeof(float));
-
-        // 将每一字节添加到 vector 中
-        for (size_t i = 0; i < sizeof(float); ++i) {
+        for (size_t i = 0; i < sizeof(float); ++i)
+        {
             output.push_back(bytes[i]);
         }
     }
+
+    // CRC-16 Modbus 校验算法 (0xA001)
+    uint16_t calculateCRC16(const std::vector<uint8_t>& data)
+    {
+        uint16_t crc = 0xFFFF;  // 初始值
+        for (auto byte : data)
+        {
+            crc ^= (byte);  // 将字节移至低位
+            for (int i = 0; i < 8; i++)
+            {
+                if (crc & 0x0001)
+                {
+                    crc = (crc >> 1) ^ 0xA001;  // 多项式 0xA001
+                }
+                else
+                {
+                    crc >>= 1;
+                }
+            }
+        }
+        return crc;
+    }
+
     rclcpp::Subscription<rm_interfaces::msg::NavigationMsg>::SharedPtr sub_;
     std::vector<uint8_t> control;
 
