@@ -123,7 +123,7 @@ private:
         try
         {
             serial_port_.write(control);
-            //RCLCPP_INFO(this->get_logger(), "Command sent is OK");
+            RCLCPP_INFO(this->get_logger(), "Command sent is OK");
         }
         catch (const serial::IOException &e)
         {
@@ -145,10 +145,10 @@ private:
         }
 
         // 打印接收到的6个浮动数
-        RCLCPP_INFO(this->get_logger(), "Received floats: ");
+        //RCLCPP_INFO(this->get_logger(), "Received floats: ");
         for (int i = 0; i < 6; ++i)
         {
-            RCLCPP_INFO(this->get_logger(), "Float %d: %f", i, parsed_floats[i]);
+            //RCLCPP_INFO(this->get_logger(), "Float %d: %f", i, parsed_floats[i]);
         }
 
     }
