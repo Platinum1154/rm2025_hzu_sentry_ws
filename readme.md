@@ -1,9 +1,12 @@
 # 正常启动按顺序开启
-- 上发整合版（无amcl）： 包括 启动一号雷达 、 启动二号雷达 、 启动双雷达数据处理 、 静态坐标系变换 、 开启里程计 
+- 上发整合版（无amcl）： 包括 启动一号雷达 、 启动二号雷达 、 启动双雷达数据处理 、 静态坐标系变换 、 开启里程计 (暂时删除同时启动了)
 ros2 launch bot_navigation2 test_all.launch.py
 
 - 打开amcl #
 ros2 launch map_tools amcl_launch.py
+
+- 开启里程计 
+ros2 launch rf2o_laser_odometry rf2o_laser_odometry.launch.py
 
 # 建图
 - slam建图 

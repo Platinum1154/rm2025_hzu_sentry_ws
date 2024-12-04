@@ -28,7 +28,7 @@ def generate_launch_description():
     merged_scan_file = IncludeLaunchDescription(PythonLaunchDescriptionSource(merged_scan_launch_file_path))
     tf_static_file = IncludeLaunchDescription(PythonLaunchDescriptionSource(tf_static_launch_file_path))
     # amcl_file = IncludeLaunchDescription(PythonLaunchDescriptionSource(amcl_launch_file_path))
-    odometry_file = IncludeLaunchDescription(PythonLaunchDescriptionSource(odometry_launch_file_path))
+    # odometry_file = IncludeLaunchDescription(PythonLaunchDescriptionSource(odometry_launch_file_path))
     # navigation_file = IncludeLaunchDescription(PythonLaunchDescriptionSource(navigation_launch_file_path))
 
     # navigation_file = IncludeLaunchDescription(
@@ -52,7 +52,7 @@ def generate_launch_description():
     ld.add_action(merged_scan_file)
     ld.add_action(tf_static_file)
     # ld.add_action(amcl_file)
-    ld.add_action(odometry_file)
+    # ld.add_action(odometry_file)
     # ld.add_action(navigation_file)
 
     return ld

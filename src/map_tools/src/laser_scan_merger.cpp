@@ -38,7 +38,7 @@ private:
         projector_.projectLaser(*scan1, cloud1_);  // 将 LaserScan 转换为 PointCloud2
         pcl::fromROSMsg(cloud1_, *pcl_cloud1_);    // 将 PointCloud2 转换为 PCL 点云
         point_cloud_1_pub_->publish(cloud1_);
-        transformPointCloud(pcl_cloud1_, -0.23, 0.0, 0.0); // 对点云进行平移变换，x轴向左平移23cm
+        transformPointCloud(pcl_cloud1_, -0.22026, 0.2238, 0.0); // 对点云进行平移变换，x轴向左平移23cm
         mergeAndPublish();                         // 尝试合并点云并发布
     }
 
@@ -84,8 +84,8 @@ void scan2Callback(const sensor_msgs::msg::LaserScan::SharedPtr scan2) {
         RCLCPP_INFO(this->get_logger(), "Before filter Point Cloud size: %zu", merged_pcl_cloud.size());
         
         //滤波器
-        Eigen::Vector4f min_point(-0.15, -0.15, -1000.0, 1.0); // 正方形的最小点 (x_min, y_min, z_min)
-        Eigen::Vector4f max_point(0.40, 0.35, 1000.0, 1.0);    // 正方形的最大点 (x_max, y_max, z_max)
+        Eigen::Vector4f min_point(-0.4, -0.4, -1000.0, 1.0); // 正方形的最小点 (x_min, y_min, z_min)
+        Eigen::Vector4f max_point(0.40, 0.4, 1000.0, 1.0);    // 正方形的最大点 (x_max, y_max, z_max)
 
         // 创建CropBox滤波器
         pcl::CropBox<pcl::PointXYZ> crop_box_filter;

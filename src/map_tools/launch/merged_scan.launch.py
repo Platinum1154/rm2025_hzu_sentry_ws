@@ -37,7 +37,7 @@ def generate_launch_description():
     tf2_node = Node(package='tf2_ros',
                     executable='static_transform_publisher',
                     name='static_tf_pub_laser_merged',
-                    arguments=['0.115', '0', '0', '0', '0', '0', '1', 'base_link', 'merged_laser'],
+                    arguments=['0', '0', '0', '0', '0', '0', '1', 'base_link', 'merged_laser'],
                     )
 
     return LaunchDescription([
@@ -46,4 +46,5 @@ def generate_launch_description():
         # lidar_x3_launch,
         # lidar_x3_launch_2
     ])
-# 两个雷达不能同时启动，报的错误是2雷达的串口加载成默认串口ydlidar
+
+# 两个雷达不能同时启动，报的错误是2雷达的串口加载成默认串口ydlidar  已解决

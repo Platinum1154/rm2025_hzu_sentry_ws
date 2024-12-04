@@ -57,7 +57,7 @@ def generate_launch_description():
     tf2_node_laser2 = Node(package='tf2_ros',
                             executable='static_transform_publisher',
                             name='static_tf_pub_laser_2',
-                            arguments=['0.115', '0', '0', '0', '0', '0', '1', 'base_link', 'laser2'])
+                            arguments=['0.11192', '0.10962', '0', '0', '0', '1', '0', 'base_link', 'laser2'])
 
     # # 静态变换发布器，发布激光雷达1的变换
     # tf2_node_laser1 = Node(package='tf2_ros',
