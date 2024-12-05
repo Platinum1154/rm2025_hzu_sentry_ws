@@ -114,7 +114,7 @@ private:
         while (rclcpp::ok() && send_thread_running.load())
         {
             sendCommand();
-            std::this_thread::sleep_for(std::chrono::milliseconds(10)); // 每隔0.01秒发送一次
+            std::this_thread::sleep_for(std::chrono::milliseconds(1)); // 每隔0.01秒发送一次
         }
     }
 

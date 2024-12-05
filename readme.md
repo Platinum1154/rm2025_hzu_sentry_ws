@@ -2,11 +2,6 @@
 - 上发整合版（无amcl）： 包括 启动一号雷达 、 启动二号雷达 、 启动双雷达数据处理 、 静态坐标系变换 、 开启里程计 (暂时删除同时启动了)
 ros2 launch bot_navigation2 test_all.launch.py
 
-- 打开amcl #
-ros2 launch map_tools amcl_launch.py
-
-- 开启里程计 
-ros2 launch rf2o_laser_odometry rf2o_laser_odometry.launch.py
 
 # 建图
 - slam建图 
@@ -17,17 +12,12 @@ ros2 run nav2_map_server map_saver_cli -t map -f slam_map
 <!-- ros2 run nav2_map_server map_saver_cli -t map -f slam_map --free_threshold 64 --occupied_threshold 165 --image_format pgm -->
 
 # 巡航
-- 载入地图 
-ros2 run nav2_map_server map_server --ros-args --param yaml_filename:=slam_map.yaml
 
-- 地图配置 
-ros2 lifecycle set /map_server configure
-
-- 地图激活 
-ros2 lifecycle set /map_server activate
+- 开启里程计 
+ros2 launch rf2o_laser_odometry rf2o_laser_odometry.launch.py
 
 - 导航 
-ros2 launch bot_navigation2 navigation2.launch.py use_sim_time:=False slam:=False map:=/home/morefine/rm2025_hzu_sentry_ws/src/map_tools/maps/slam_map.yaml
+ros2 launch bot_navigation2 navigation2.launch.py use_sim_time:=False slam:=False map:=/home/morefine/rm2025_hzu_sentry_ws/slam_map.yaml
 
 - 导航数据打包成自定义消息 
 ros2 run map_tools cmd_vel2serial.py
