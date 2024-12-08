@@ -11,7 +11,7 @@ class CmdVel2Serial(Node):
         # 订阅 cmd_vel 主题
         self.subscription = self.create_subscription(
             Twist,
-            '/cmd_vel',  # 更改为更常见的 cmd_vel 主题
+            '/cmd_vel_nav',  # 更改为更常见的 cmd_vel 主题
             self.cmd_vel_callback,
             10)
 

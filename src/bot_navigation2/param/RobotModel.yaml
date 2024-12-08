@@ -114,12 +114,14 @@ controller_server:
     min_theta_velocity_threshold: 0.001  # 最小theta轴速度阈值，控制机器人的旋转精度
     failure_tolerance: 0.3  # 控制器在执行过程中允许的最大误差，超过该值认为控制失败
     progress_checker_plugin: "progress_checker"  #
+    goal_checker_plugins: ["general_goal_checker"]  # 目标检查插件，用于检查是否到达目标
+    controller_plugins: ["FollowPath"]  # 控制器插件列表，定义用于路径跟踪的插件
 
     # Progress checker parameters
     progress_checker:
       plugin: "nav2_controller::SimpleProgressChecker"  # 进度检查器插件，简单的进度检查器
-      required_movement_radius: 0.5  # 必须达到的最小移动半径（米），用于判断是否完成目标的进度
-      movement_time_allowance: 10.0  # 允许的最大时间（秒）来完成进度
+      required_movement_radius: 0.1  # 必须达到的最小移动半径（米），用于判断是否完成目标的进度
+      movement_time_allowance: 1.0  # 允许的最大时间（秒）来完成进度
 
     # General goal checker parameters
     general_goal_checker:
@@ -145,8 +147,8 @@ controller_server:
       min_speed_theta: 0.0  # 最小角速度（弧度/秒）
 
       # 加速度和减速度限制
-      acc_lim_x: 2.5  # x轴的加速度限制（米/秒²）
-      acc_lim_y: 2.5  # y轴的加速度限制（米/秒²）
+      acc_lim_x: 20  # x轴的加速度限制（米/秒²）
+      acc_lim_y: 20  # y轴的加速度限制（米/秒²）
       acc_lim_theta: 0.0  # 对全向机器人，禁用角速度的加速度
 
       decel_lim_x: -2.5  # x轴的减速度限制（米/秒²）
@@ -154,12 +156,12 @@ controller_server:
       decel_lim_theta: 0.0  # 对全向机器人，禁用角速度的减速度
 
       # 速度采样点数
-      vx_samples: 20  # x轴速度的采样点数
-      vy_samples: 20  # y轴速度的采样点数
+      vx_samples: 30  # x轴速度的采样点数
+      vy_samples: 30  # y轴速度的采样点数
       vtheta_samples: 0  # 禁用角速度的采样点数
 
       # 每个速度采样点的仿真时间（秒）
-      sim_time: 1.5  # 每个速度采样点的仿真时间
+      sim_time: 1.7   # 每个速度采样点的仿真时间
 
       # 线速度和角速度的精度
       linear_granularity: 0.05  # 线速度的精度（米/秒）
@@ -169,7 +171,7 @@ controller_server:
       transform_tolerance: 0.2  # TF变换的容忍度（秒）
 
       # 目标位置和目标方向的容忍度
-      xy_goal_tolerance: 0.05  # 目标位置的容忍度（米）
+      xy_goal_tolerance: 0.5  # 目标位置的容忍度（米）
       trans_stopped_velocity: 0.25  # 停止时的速度阈值，低于此速度认为机器人已经停止
 
       # 快速路径评估
@@ -179,19 +181,20 @@ controller_server:
       stateful: True  # 是否为状态保持的控制器
 
       # 评估器列表，用于评估当前路径的质量
-      critics: ["BaseObstacle", "PathAlign", "GoalAlign", "PathDist", "GoalDist"]
+      critics: ["RotateToGoal", "Oscillation", "BaseObstacle", "GoalAlign", "PathAlign", "PathDist", "GoalDist"]  # 评估器列表，用于评估当前路径的质量
 
       # 各种评估器的参数设置
-      BaseObstacle.scale: 0.02  # 障碍物评估的权重
-      PathAlign.scale: 16.0  # 路径对齐的权重
+      BaseObstacle.scale: 0.1  # 障碍物评估的权重
+      PathAlign.scale: 1.0  # 路径对齐的权重
       PathAlign.forward_point_distance: 0.1  # 路径对齐前进点的距离
-      GoalAlign.scale: 16.0  # 目标对齐的权重
+      GoalAlign.scale: 0.0  # 目标对齐的权重
       GoalAlign.forward_point_distance: 0.1  # 目标对齐前进点的距离
       PathDist.scale: 32.0  # 路径距离的权重
       GoalDist.scale: 24.0  # 目标距离的权重
       RotateToGoal.scale: 0.0  # 禁用旋转对齐
       RotateToGoal.slowing_factor: 5.0  # 旋转的减速因子
-      RotateToGoal.lookahead_time: -1.0  # 旋转目标的前瞻时间（负值表示禁用）
+      RotateToGoal.lookahead_time: -1.0  # 旋转目标的前瞻时间（负值表示禁用
+      holonomic_robot: true
 
 controller_server_rclcpp_node:
   ros__parameters:
@@ -201,8 +204,10 @@ controller_server_rclcpp_node:
 local_costmap:
   local_costmap:
     ros__parameters:
-      update_frequency: 5.0  # 更新频率，单位为Hz，控制局部代价地图更新的频率
-      publish_frequency: 2.0  # 发布频率，单位为Hz，控制局部代价地图发布的频率
+      update_frequency: 20.0  # 更新频率，单位为Hz，控制局部代价地图更新的频率
+      publish_frequency: 10.0  # 发布频率，单位为Hz，控制局部代价地图发布的频率
+      transform_tolerance: 0.5
+
       global_frame: odom  # 设置全局坐标系为"odom"，这通常是里程计坐标系
       robot_base_frame: base_link  # 机器人本体坐标系，通常为"base_link"
       use_sim_time: False  # 是否使用仿真时间，通常在仿真环境中为True。设置为False表示使用系统时间
@@ -210,20 +215,20 @@ local_costmap:
       width: 3  # 局部代价地图的宽度，单位为米
       height: 3  # 局部代价地图的高度，单位为米
       resolution: 0.05  # 局部代价地图的分辨率，单位为米，表示每个网格的大小
-      robot_radius: 0.4  # 机器人半径，单位为米，用于在代价地图中考虑机器人的尺寸
+      robot_radius: 0.3  # 机器人半径，单位为米，用于在代价地图中考虑机器人的尺寸
       plugins: ["obstacle_layer", "voxel_layer", "inflation_layer"]  # 局部代价地图中使用的插件列表
 
       # InflationLayer插件，用于扩展障碍物的影响区域
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"  # 使用的插件类型
-        inflation_radius: 1.0  # 通常会将障碍物扩展一定的半径，以防止机器人碰撞
-        cost_scaling_factor: 3.0  # 代价扩展因子，控制障碍物周围区域的代价值
+        inflation_radius: 0.15  # 通常会将障碍物扩展一定的半径，以防止机器人碰撞
+        cost_scaling_factor: 18  # 代价扩展因子，控制障碍物周围区域的代价值
 
       # ObstacleLayer插件，用于检测并标记障碍物
       obstacle_layer:
         plugin: "nav2_costmap_2d::ObstacleLayer"  # 使用的插件类型
         enabled: True  # 启用障碍物层
-        observation_sources: scan  # 从扫描数据中获取障碍物信息
+        observation_sources: scan  # 从扫描数据中获取障碍物信息 ///////////////明天调这里
         scan:
           topic: /merged_scan  # 激光雷达数据的主题，通常是合并的扫描数据
           max_obstacle_height: 2.0  # 障碍物的最大高度，超过此高度的物体不会被认为是障碍物
@@ -241,7 +246,7 @@ local_costmap:
         z_voxels: 16  # Z轴体素的数量，控制体素在垂直方向上的分辨率
         max_obstacle_height: 2.0  # 体素层中障碍物的最大高度，超过此高度的物体不会被认为是障碍物
         mark_threshold: 0  # 用于标记障碍物的阈值
-        observation_sources: merged_scan  # 从哪个数据源获取障碍物信息，这里是合并扫描数据
+        observation_sources: scan  # 从哪个数据源获取障碍物信息，这里是合并扫描数据
         scan:
           topic: /merged_scan  # 激光扫描数据的主题
           max_obstacle_height: 2.0  # 设置最大障碍物高度
@@ -275,10 +280,12 @@ global_costmap:
     ros__parameters:
       update_frequency: 1.0  # 更新频率，单位为Hz，控制全局代价地图更新的频率
       publish_frequency: 1.0  # 发布频率，单位为Hz，控制全局代价地图发布的频率
+      transform_tolerance: 0.5
+
       global_frame: map  # 全局坐标系，这里设置为"map"表示全局地图坐标系
       robot_base_frame: base_link  # 机器人本体坐标系，这里使用"base_link"
-      use_sim_time: True  # 使用仿真时间，在仿真环境中通常为True
-      robot_radius: 0.4  # 机器人半径，单位为米，用于考虑机器人的尺寸
+      use_sim_time: False  # 使用仿真时间，在仿真环境中通常为True
+      robot_radius: 0.35  # 机器人半径，单位为米，用于考虑机器人的尺寸
       resolution: 0.05  # 全局代价地图的分辨率，单位为米，表示每个网格的大小
       track_unknown_space: true  # 是否跟踪未知空间，启用时代价地图会填充未知空间
       plugins: ["static_layer", "obstacle_layer", "voxel_layer", "inflation_layer"]  # 使用的插件列表，包含静态层、障碍物层、体素层和膨胀层
@@ -287,7 +294,7 @@ global_costmap:
       obstacle_layer:
         plugin: "nav2_costmap_2d::ObstacleLayer"  # 使用的插件类型
         enabled: True  # 启用障碍物层
-        observation_sources: merged_scan  # 从合并的激光扫描数据中获取障碍物信息
+        observation_sources: scan  # 从合并的激光扫描数据中获取障碍物信息
         scan:
           topic: /merged_scan  # 激光扫描数据的主题
           max_obstacle_height: 2.0  # 障碍物的最大高度，超过此高度的物体不会被认为是障碍物
@@ -309,7 +316,7 @@ global_costmap:
         z_voxels: 16  # Z轴体素的数量，控制体素在垂直方向上的分辨率
         max_obstacle_height: 2.0  # 体素层中障碍物的最大高度，超过此高度的物体不会被认为是障碍物
         mark_threshold: 0  # 用于标记障碍物的阈值
-        observation_sources: merged_scan  # 从哪个数据源获取障碍物信息，这里是合并扫描数据
+        observation_sources: scan  # 从哪个数据源获取障碍物信息，这里是合并扫描数据
         scan:
           topic: /merged_scan  # 激光扫描数据的主题
           max_obstacle_height: 2.0  # 设置最大障碍物高度
@@ -329,8 +336,8 @@ global_costmap:
       # InflationLayer插件，用于扩展障碍物的影响区域
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"  # 使用的插件类型
-        cost_scaling_factor: 2.5  # 代价扩展因子，控制障碍物周围区域的代价值
-        inflation_radius: 0.7  # 膨胀半径，用于控制障碍物周围区域的扩展距离
+        cost_scaling_factor: 10.0 # 代价扩展因子，控制障碍物周围区域的代价值
+        inflation_radius: 0.8  # 膨胀半径，用于控制障碍物周围区域的扩展距离
 
       always_send_full_costmap: True  # 是否总是发送完整的代价地图，通常为了减少传输的频率
 
@@ -361,12 +368,12 @@ map_saver:
 planner_server:
   ros__parameters:
     expected_planner_frequency: 20.0  # 期望的规划器频率，单位为Hz
-    use_sim_time: False  # 是否使用仿真时间，通常为False
+    use_sim_time: False  # 是否使用仿真时间，通常为FalseGoalAlign
     planner_plugins: ["GridBased"]  # 使用的规划插件，这里使用网格基础的规划
     GridBased:
       plugin: "nav2_navfn_planner/NavfnPlanner"  # 使用Navfn规划器插件
       tolerance: 0.5  # 路径规划的目标容忍度，单位为米，表示目标位置的误差
-      use_astar: false  # 是否使用A*算法，设置为false使用Dijkstra算法
+      use_astar: true  # 是否使用A*算法，设置为false使用Dijkstra算法
       allow_unknown: true  # 是否允许规划路径穿过未知区域
 
 planner_server_rclcpp_node:
@@ -388,8 +395,8 @@ recoveries_server:
     global_frame: odom  # 全局坐标系设置为"odom"
     robot_base_frame: base_link  # 机器人本体坐标系设置为"base_link"
     transform_timeout: 0.1  # 坐标变换的超时时间，单位为秒
-    use_sim_time: true  # 是否使用仿真时间
-    simulate_ahead_time: 2.0  # 预模拟时间，用于恢复操作前的预测
+    use_sim_time: False  # 是否使用仿真时间
+    simulate_ahead_time: 10.0  # 预模拟时间，用于恢复操作前的预测
     max_rotational_vel: 1.0  # 最大旋转速度，单位为弧度/秒
     min_rotational_vel: 0.4  # 最小旋转速度，单位为弧度/秒
     rotational_acc_lim: 3.2  # 旋转加速度限制，单位为弧度/秒^2

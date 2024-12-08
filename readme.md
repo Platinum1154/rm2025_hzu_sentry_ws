@@ -25,7 +25,8 @@ ros2 run map_tools cmd_vel2serial.py
 - 真串口
 ros2 run map_tools serial_port 
 
-
+- 动态调参
+ros2 run rqt_reconfigure rqt_reconfigure
 
 
 

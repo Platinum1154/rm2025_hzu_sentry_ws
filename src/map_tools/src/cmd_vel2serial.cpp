@@ -8,7 +8,7 @@ public:
     cmd_vel2serial() : Node("cmd_vel2serial") {
         // 订阅cmd_vel话题
         sub_ = this->create_subscription<geometry_msgs::msg::Twist>(
-            "/cmd_vel", 10, std::bind(&cmd_vel2serial::Callback, this, std::placeholders::_1));
+            "/cmd_vel_nav", 10, std::bind(&cmd_vel2serial::Callback, this, std::placeholders::_1));
 
         // 发布合并后的LaserScan话题
         pub_ = this->create_publisher<rm_interfaces::msg::NavigationMsg>("/nav/control", 10);
@@ -20,7 +20,7 @@ public:
         // 创建一个LaserScan消息，填充数据
         sensor_msgs::msg::LaserScan scan;
         nav_msg.linear_velocity_x = msg->linear.x;
-        nav_msg.linear_velocity_y = msg->linear.x;
+        nav_msg.linear_velocity_y = msg->linear.y;
         nav_msg.angular_velocity_z = msg->angular.z;
         // ... 设置scan消息的各项参数 ...
         pub_->publish(nav_msg);
