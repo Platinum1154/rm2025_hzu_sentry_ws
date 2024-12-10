@@ -113,6 +113,19 @@ private:
 
         while (rclcpp::ok() && send_thread_running.load())
         {
+            second++;
+            if (second > 1000)
+            {
+                control.push_back((uint8_t)0xA4); // 设置起始字节
+                floatToHexBytes(0, control);
+                floatToHexBytes(0, control);
+                floatToHexBytes(0, control);
+
+                // 添加 CRC16 校验
+                uint16_t crc = calculateCRC16(control);
+                control.push_back((crc >> 8) & 0xFF); // CRC16 MSB
+                control.push_back(crc & 0xFF);        // CRC16 LSB
+            }
             sendCommand();
             std::this_thread::sleep_for(std::chrono::milliseconds(1)); // 每隔0.01秒发送一次
         }
@@ -157,6 +170,7 @@ private:
     
     void callback(const rm_interfaces::msg::NavigationMsg::SharedPtr msg)
     {
+        second=0;
         control.push_back((uint8_t)0xA4);  // 设置起始字节
         floatToHexBytes(msg->linear_velocity_x, control);
         floatToHexBytes(msg->linear_velocity_y, control);
@@ -164,8 +178,8 @@ private:
 
         // 添加 CRC16 校验
         uint16_t crc = calculateCRC16(control);
-        control.push_back(crc & 0xFF);  // CRC16 LSB
         control.push_back((crc >> 8) & 0xFF);  // CRC16 MSB
+        control.push_back(crc & 0xFF);  // CRC16 LSB
     }
 
     void floatToHexBytes(float input, std::vector<uint8_t>& output)
@@ -205,7 +219,7 @@ private:
 
     serial::Serial serial_port_;
     std::string _port_name;
-
+    volatile long second = 0;
     std::thread receive_thread_;
     std::thread send_thread_;
 };

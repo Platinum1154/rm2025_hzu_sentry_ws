@@ -127,8 +127,8 @@ controller_server:
     general_goal_checker:
       stateful: True  # 是否为状态保持的目标检查器
       plugin: "nav2_controller::SimpleGoalChecker"  # 目标检查插件，检查是否到达目标
-      xy_goal_tolerance: 0.25  # 目标点位置容忍度（米），机器人到达目标位置的允许误差
-      yaw_goal_tolerance: 0.0  # 对于全向机器人，角度容忍度通常设置为0，因为全向机器人没有明显的“方向”
+      xy_goal_tolerance: 0.1  # 目标点位置容忍度（米），机器人到达目标位置的允许误差
+      yaw_goal_tolerance: 4.0  # 对于全向机器人，角度容忍度通常设置为0，因为全向机器人没有明显的“方向”
 
     # DWB (Dynamic Window Approach) parameters
     FollowPath:
@@ -147,8 +147,8 @@ controller_server:
       min_speed_theta: 0.0  # 最小角速度（弧度/秒）
 
       # 加速度和减速度限制
-      acc_lim_x: 20  # x轴的加速度限制（米/秒²）
-      acc_lim_y: 20  # y轴的加速度限制（米/秒²）
+      acc_lim_x: 20.0  # x轴的加速度限制（米/秒²）
+      acc_lim_y: 20.0 # y轴的加速度限制（米/秒²）
       acc_lim_theta: 0.0  # 对全向机器人，禁用角速度的加速度
 
       decel_lim_x: -2.5  # x轴的减速度限制（米/秒²）
@@ -201,6 +201,7 @@ controller_server_rclcpp_node:
     use_sim_time: False  # 是否使用仿真时间，通常在仿真环境中为True。设置为False表示使用系统时间
 
 
+
 local_costmap:
   local_costmap:
     ros__parameters:
@@ -215,16 +216,16 @@ local_costmap:
       width: 3  # 局部代价地图的宽度，单位为米
       height: 3  # 局部代价地图的高度，单位为米
       resolution: 0.05  # 局部代价地图的分辨率，单位为米，表示每个网格的大小
-      robot_radius: 0.3  # 机器人半径，单位为米，用于在代价地图中考虑机器人的尺寸
+      robot_radius: 0.45  # 机器人半径，单位为米，用于在代价地图中考虑机器人的尺寸
       plugins: ["obstacle_layer", "voxel_layer", "inflation_layer"]  # 局部代价地图中使用的插件列表
 
       # InflationLayer插件，用于扩展障碍物的影响区域
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"  # 使用的插件类型
-        inflation_radius: 0.15  # 通常会将障碍物扩展一定的半径，以防止机器人碰撞
-        cost_scaling_factor: 18  # 代价扩展因子，控制障碍物周围区域的代价值
+        inflation_radius: 0.5  # 通常会将障碍物扩展一定的半径，以防止机器人碰撞
+        cost_scaling_factor: 0.15  # 代价扩展因子，控制障碍物周围区域的代价值
 
-      # ObstacleLayer插件，用于检测并标记障碍物
+      # ObstacleLayer插件，用于检测并标障碍物
       obstacle_layer:
         plugin: "nav2_costmap_2d::ObstacleLayer"  # 使用的插件类型
         enabled: True  # 启用障碍物层
@@ -275,6 +276,8 @@ local_costmap:
       use_sim_time: False  # 是否使用仿真时间，通常在仿真环境中为True。设置为False表示使用系统时间
 
 
+
+
 global_costmap:
   global_costmap:
     ros__parameters:
@@ -285,7 +288,7 @@ global_costmap:
       global_frame: map  # 全局坐标系，这里设置为"map"表示全局地图坐标系
       robot_base_frame: base_link  # 机器人本体坐标系，这里使用"base_link"
       use_sim_time: False  # 使用仿真时间，在仿真环境中通常为True
-      robot_radius: 0.35  # 机器人半径，单位为米，用于考虑机器人的尺寸
+      robot_radius: 0.45  # 机器人半径，单位为米，用于考虑机器人的尺寸
       resolution: 0.05  # 全局代价地图的分辨率，单位为米，表示每个网格的大小
       track_unknown_space: true  # 是否跟踪未知空间，启用时代价地图会填充未知空间
       plugins: ["static_layer", "obstacle_layer", "voxel_layer", "inflation_layer"]  # 使用的插件列表，包含静态层、障碍物层、体素层和膨胀层
@@ -294,7 +297,7 @@ global_costmap:
       obstacle_layer:
         plugin: "nav2_costmap_2d::ObstacleLayer"  # 使用的插件类型
         enabled: True  # 启用障碍物层
-        observation_sources: scan  # 从合并的激光扫描数据中获取障碍物信息
+        observation_sources: scan  # 是类型 从合并的激光扫描数据中获取障碍物信息
         scan:
           topic: /merged_scan  # 激光扫描数据的主题
           max_obstacle_height: 2.0  # 障碍物的最大高度，超过此高度的物体不会被认为是障碍物
@@ -316,7 +319,7 @@ global_costmap:
         z_voxels: 16  # Z轴体素的数量，控制体素在垂直方向上的分辨率
         max_obstacle_height: 2.0  # 体素层中障碍物的最大高度，超过此高度的物体不会被认为是障碍物
         mark_threshold: 0  # 用于标记障碍物的阈值
-        observation_sources: scan  # 从哪个数据源获取障碍物信息，这里是合并扫描数据
+        observation_sources: merged_scan  # 从哪个数据源获取障碍物信息，这里是合并扫描数据
         scan:
           topic: /merged_scan  # 激光扫描数据的主题
           max_obstacle_height: 2.0  # 设置最大障碍物高度
@@ -336,8 +339,8 @@ global_costmap:
       # InflationLayer插件，用于扩展障碍物的影响区域
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"  # 使用的插件类型
-        cost_scaling_factor: 10.0 # 代价扩展因子，控制障碍物周围区域的代价值
-        inflation_radius: 0.8  # 膨胀半径，用于控制障碍物周围区域的扩展距离
+        cost_scaling_factor: 1.0 # 代价扩展因子，控制障碍物周围区域的代价值
+        inflation_radius: 0.6  # 膨胀半径，用于控制障碍物周围区域的扩展距离
 
       always_send_full_costmap: True  # 是否总是发送完整的代价地图，通常为了减少传输的频率
 
