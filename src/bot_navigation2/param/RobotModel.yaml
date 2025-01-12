@@ -229,7 +229,7 @@ local_costmap:
       obstacle_layer:
         plugin: "nav2_costmap_2d::ObstacleLayer"  # 使用的插件类型
         enabled: True  # 启用障碍物层
-        footprint_clearing_enabled: false
+        footprint_clearing_enabled: true
         observation_sources: scan  # 从扫描数据中获取障碍物信息 ///////////////明天调这里
         scan:
           topic: /merged_scan  # 激光雷达数据的主题，通常是合并的扫描数据
@@ -249,7 +249,7 @@ local_costmap:
         max_obstacle_height: 1.0  # 体素层中障碍物的最大高度，超过此高度的物体不会被认为是障碍物
         mark_threshold: 0  # 用于标记障碍物的阈值
         observation_sources: scan  # 从哪个数据源获取障碍物信息，这里是合并扫描数据
-        footprint_clearing_enabled: false
+        footprint_clearing_enabled: true
         scan:
           topic: /merged_scan  # 激光扫描数据的主题
           max_obstacle_height: 0.5  # 设置最大障碍物高度
