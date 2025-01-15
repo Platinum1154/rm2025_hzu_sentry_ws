@@ -205,8 +205,8 @@ controller_server_rclcpp_node:
 local_costmap:
   local_costmap:
     ros__parameters:
-      update_frequency: 500.0  # 更新频率，单位为Hz，控制局部代价地图更新的频率
-      publish_frequency: 100.0  # 发布频率，单位为Hz，控制局部代价地图发布的频率
+      update_frequency: 30.0  # 更新频率，单位为Hz，控制局部代价地图更新的频率
+      publish_frequency: 10.0  # 发布频率，单位为Hz，控制局部代价地图发布的频率
       transform_tolerance: 0.5
 
       global_frame: odom  # 设置全局坐标系为"odom"，这通常是里程计坐标系
@@ -222,7 +222,7 @@ local_costmap:
       # InflationLayer插件，用于扩展障碍物的影响区域
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"  # 使用的插件类型
-        inflation_radius: 0.42  # 通常会将障碍物扩展一定的半径，以防止机器人碰撞
+        inflation_radius: 0.45  # 通常会将障碍物扩展一定的半径，以防止机器人碰撞
         cost_scaling_factor: 20.0  # 代价扩展因子，控制障碍物周围区域的代价值
 
       # ObstacleLayer插件，用于检测并标障碍物
@@ -305,7 +305,7 @@ global_costmap:
           topic: /merged_scan  # 激光扫描数据的主题
           max_obstacle_height: 0.5  # 障碍物的最大高度，超过此高度的物体不会被认为是障碍物
           clearing: True  # 启用清除，表示障碍物被移除后，地图中的代价也会被清除
-          marking: false  # 启用标记，表示障碍物会被标记在代价地图中
+          marking: True  # 启用标记，表示障碍物会被标记在代价地图中
           data_type: "LaserScan"  # 数据类型，这里使用"LaserScan"
           raytrace_max_range: 3.0  # 光线追踪的最大范围
           raytrace_min_range: 0.0  # 光线追踪的最小范围
@@ -367,7 +367,7 @@ map_server:
 map_saver:
   ros__parameters:
     use_sim_time: False  # 是否使用仿真时间，通常为False
-    save_map_timeout: 0.01  # 保存地图的超时时间，单位为秒
+    save_map_timeout: 5.0  # 保存地图的超时时间，单位为秒
     free_thresh_default: 0.25  # 默认自由空间阈值（0~1之间），低于该值认为是障是碍物
     occupied_thresh_default: 0.65  # 默认占据空间阈值（0~1之间），高于该值认为是障碍物
     map_subscribe_transient_local: True  # 是否使用临时本地地图订阅（一般在动态地图时使用）
