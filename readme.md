@@ -28,6 +28,8 @@ ros2 run map_tools serial_port
 - 动态调参
 ros2 run rqt_reconfigure rqt_reconfigure
 
+- 单次清除局部代价地图
+ros2 run map_tools clear_cost_map 
 
 
 **旧版注释**

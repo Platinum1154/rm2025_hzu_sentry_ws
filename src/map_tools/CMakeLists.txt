@@ -12,11 +12,13 @@ find_package(PCL REQUIRED)
 find_package(rm_interfaces REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(serial REQUIRED)
-
+find_package(std_srvs REQUIRED)
+find_package(nav2_msgs REQUIRED)
 
 add_executable(merger_node src/laser_scan_merger.cpp)
 add_executable(save_point_cloud src/save_point_cloud.cpp)
 add_executable(serial_port src/serial_port.cpp)
+add_executable(clear_cost_map src/clear_cost_map.cpp)
 # add_executable(cmd_vel2serial src/cmd_vel2serial.cpp)
 
 
@@ -52,6 +54,17 @@ ament_target_dependencies(serial_port
   serial
 )
 
+ament_target_dependencies(clear_cost_map 
+  rclcpp 
+  sensor_msgs 
+  laser_geometry 
+  pcl_ros 
+  PCL
+  rm_interfaces
+  std_msgs
+  std_srvs
+  nav2_msgs
+)
 # ament_target_dependencies(cmd_vel2serial
 #   rclcpp 
 #   sensor_msgs 
@@ -69,6 +82,7 @@ install(TARGETS
   serial_port
   merger_node
   save_point_cloud
+  clear_cost_map
   # cmd_vel2serial
   DESTINATION lib/${PROJECT_NAME})
   
