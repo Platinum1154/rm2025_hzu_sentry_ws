@@ -158,10 +158,10 @@ private:
         }
 
         // 打印接收到的6个浮动数
-        //RCLCPP_INFO(this->get_logger(), "Received floats: ");
+        RCLCPP_INFO(this->get_logger(), "Received floats: ");
         for (int i = 0; i < 6; ++i)
         {
-            //RCLCPP_INFO(this->get_logger(), "Float %d: %f", i, parsed_floats[i]);
+            RCLCPP_INFO(this->get_logger(), "Float %d: %f", i, parsed_floats[i]);
         }
 
     }
