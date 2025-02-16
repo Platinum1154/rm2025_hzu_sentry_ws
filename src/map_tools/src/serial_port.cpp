@@ -20,7 +20,7 @@ public:
         // 接收nav/control的数据
         sub_ = this->create_subscription<rm_interfaces::msg::NavigationMsg>(
             "/nav/control", 10, std::bind(&SerialDriverNode::callback, this, std::placeholders::_1));
-        
+        pub_ = this->create_publisher<rm_interfaces::msg::OdoMsg>("/nav/odo", 10);
         // 获取串口名称
         _port_name = this->declare_parameter("~port_name", "/dev/ttyUSB3");
 
@@ -80,9 +80,9 @@ private:
                 
                 if (buffer.size() >= 28 && buffer[0] == 0x4A && buffer[25] == 0x2b)  // 校验帧头和包的最小长度
                 {
-                    for(int i =0;i<29;i++){
-                        printf("%d:%02x\n",i,buffer[i]);
-                    }
+                    // for(int i =0;i<29;i++){
+                    //     printf("%d:%02x\n",i,buffer[i]);
+                    // }
                     // 取出最后两个字节作为 CRC 校验码
                     uint16_t received_crc = ((uint16_t)buffer[25] << 8) | buffer[26];  // CRC 校验码在最后两位
                     std::vector<uint8_t> packet(buffer.begin(), buffer.begin() + 27);  // 剩余数据部分
@@ -172,6 +172,11 @@ private:
         {
             RCLCPP_INFO(this->get_logger(), "Float %d: %f", i, parsed_floats[i]);
         }
+        odomsg.vx=parsed_floats[0];
+        odomsg.vy=parsed_floats[1];
+        odomsg.yaw=parsed_floats[2];
+        pub_->publish(odomsg);
+
 
     }
 
@@ -225,7 +230,8 @@ private:
 
     rclcpp::Subscription<rm_interfaces::msg::NavigationMsg>::SharedPtr sub_;
     std::vector<uint8_t> control;
-
+    rclcpp::Publisher<rm_interfaces::msg::OdoMsg>::SharedPtr pub_;
+    rm_interfaces::msg::OdoMsg odomsg;
     serial::Serial serial_port_;
     std::string _port_name;
     volatile long second = 0;
