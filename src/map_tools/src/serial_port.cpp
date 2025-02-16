@@ -22,7 +22,7 @@ public:
             "/nav/control", 10, std::bind(&SerialDriverNode::callback, this, std::placeholders::_1));
         
         // 获取串口名称
-        _port_name = this->declare_parameter("~port_name", "/dev/ttyUSB0");
+        _port_name = this->declare_parameter("~port_name", "/dev/ttyUSB3");
 
         // 初始化串口
         try
@@ -78,8 +78,11 @@ private:
                 serial_port_.read(&data, 1);
                 buffer.push_back(data);
                 
-                if (buffer.size() >= 28 && buffer[0] == 0x4A)  // 校验帧头和包的最小长度
+                if (buffer.size() >= 28 && buffer[0] == 0x4A && buffer[25] == 0x2b)  // 校验帧头和包的最小长度
                 {
+                    for(int i =0;i<29;i++){
+                        printf("%d:%02x\n",i,buffer[i]);
+                    }
                     // 取出最后两个字节作为 CRC 校验码
                     uint16_t received_crc = ((uint16_t)buffer[25] << 8) | buffer[26];  // CRC 校验码在最后两位
                     std::vector<uint8_t> packet(buffer.begin(), buffer.begin() + 27);  // 剩余数据部分
@@ -100,6 +103,10 @@ private:
                     buffer.clear();
                 }
                 else if (buffer[0] != 0x4A)
+                {
+                    buffer.clear();  // 清除无效数据
+                }
+                else if (buffer.size()>26&& buffer[25] != 0x2b)
                 {
                     buffer.clear();  // 清除无效数据
                 }
