@@ -19,6 +19,7 @@ add_executable(merger_node src/laser_scan_merger.cpp)
 add_executable(save_point_cloud src/save_point_cloud.cpp)
 add_executable(serial_port src/serial_port.cpp)
 add_executable(clear_cost_map src/clear_cost_map.cpp)
+add_executable(odo src/odo.cpp)
 # add_executable(cmd_vel2serial src/cmd_vel2serial.cpp)
 
 
@@ -65,6 +66,19 @@ ament_target_dependencies(clear_cost_map
   std_srvs
   nav2_msgs
 )
+
+ament_target_dependencies(odo 
+  rclcpp 
+  sensor_msgs 
+  laser_geometry 
+  pcl_ros 
+  PCL
+  rm_interfaces
+  std_msgs
+  std_srvs
+  nav2_msgs
+)
+
 # ament_target_dependencies(cmd_vel2serial
 #   rclcpp 
 #   sensor_msgs 
@@ -83,6 +97,7 @@ install(TARGETS
   merger_node
   save_point_cloud
   clear_cost_map
+  odo
   # cmd_vel2serial
   DESTINATION lib/${PROJECT_NAME})
   

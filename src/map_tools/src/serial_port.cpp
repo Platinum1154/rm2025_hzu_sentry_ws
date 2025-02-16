@@ -4,6 +4,8 @@
 #include "rclcpp/rclcpp.hpp"
 #include "rm_interfaces/msg/navigation_msg.hpp"
 #include <serial/serial.h>
+#include "rm_interfaces/msg/odo_msg.hpp"
+
 
 #define BAUDRATE 115200
 
@@ -84,7 +86,7 @@ private:
                     
                     // 计算 CRC 校验码
                     uint16_t calculated_crc = calculateCRC16(packet);
-                    printf("CRC: %04X %04X\n",received_crc,calculated_crc);
+                    //printf("CRC: %04X %04X\n",received_crc,calculated_crc);
                     //if (received_crc == calculated_crc)
                     {
                         // 如果 CRC 校验通过，处理数据包
@@ -136,11 +138,11 @@ private:
         try
         {
             serial_port_.write(control);
-            RCLCPP_INFO(this->get_logger(), "Command sent is OK");
+            //RCLCPP_INFO(this->get_logger(), "Command sent is OK");
         }
         catch (const serial::IOException &e)
         {
-            RCLCPP_ERROR(this->get_logger(), "Failed to send command.");
+            //RCLCPP_ERROR(this->get_logger(), "Failed to send command.");
         }
         control.clear();
     }
