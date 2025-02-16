@@ -3,7 +3,10 @@
 #include <cstring>
 #include "rclcpp/rclcpp.hpp"
 #include "rm_interfaces/msg/odo_msg.hpp"
-
+#include"geometry_msgs/msg/transform_stamped.hpp" //提供消息接口
+#include"tf2/LinearMath/Quaternion.h"             //提供tf2::Quaternion类
+#include"tf2_geometry_msgs/tf2_geometry_msgs.hpp" //提供消息类型转换函数
+#include"tf2_ros/transform_broadcaster.h"         //提供坐标广播器类:动态广播
 
 
 
@@ -15,6 +18,7 @@ public:
         // 接收nav/control的数据
         sub_ = this->create_subscription<rm_interfaces::msg::OdoMsg>(
             "/nav/odo", 10, std::bind(&OdoNode::callback, this, std::placeholders::_1));
+        tf_broadcaster_=std::make_shared<tf2_ros::TransformBroadcaster>(this);
         
     }
 
@@ -23,7 +27,19 @@ public:
     }
 
 private:
-
+    void publishTransform(float x,float y,float radians){
+        geometry_msgs::msg::TransformStamped transform;
+            transform.header.stamp=this->get_clock()->now();
+            transform.header.frame_id = "map";
+            transform.child_frame_id = "base_link";
+            transform.transform.translation.x=x;
+            transform.transform.translation.y=y;
+            transform.transform.translation.z=0.0;
+            tf2::Quaternion quat;
+            quat.setRPY(0,0,radians);
+            transform.transform.rotation = tf2::toMsg(quat);
+            tf_broadcaster_->sendTransform(transform);
+    }
     void callback(const rm_interfaces::msg::OdoMsg::SharedPtr msg)
     {
         time = this->get_clock()->now().seconds();
@@ -33,13 +49,15 @@ private:
             vy = msg->vx*std::sin(radians)+msg->vy*std::cos(radians);
             x += vx * (time-last_time);
             y += vy * (time-last_time);
+            publishTransform(x,y,radians);
         }
         RCLCPP_INFO(this->get_logger(),"x:%f, y:%f\n",x,y);
         last_time = time;
     }
-
+    
 
     rclcpp::Subscription<rm_interfaces::msg::OdoMsg>::SharedPtr sub_;
+    std::shared_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
     volatile float vx=0.0,vy=0.0,yaw=0.0;
     volatile float x=0.0,y=0.0;
     volatile float radians=0.0;
