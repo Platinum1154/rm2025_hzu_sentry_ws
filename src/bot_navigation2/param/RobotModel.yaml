@@ -171,7 +171,7 @@ controller_server:
       transform_tolerance: 0.2  # TF变换的容忍度（秒）
 
       # 目标位置和目标方向的容忍度
-      xy_goal_tolerance: 0.045  # 目标位置的容忍度（米）
+      xy_goal_tolerance: 0.1  # 目标位置的容忍度（米）
       trans_stopped_velocity: 0.03  # 停止时的速度阈值，低于此速度认为机器人已经停止
 
       # 快速路径评估
@@ -207,7 +207,7 @@ local_costmap:
     ros__parameters:
       update_frequency: 30.0  # 更新频率，单位为Hz，控制局部代价地图更新的频率
       publish_frequency: 10.0  # 发布频率，单位为Hz，控制局部代价地图发布的频率
-      transform_tolerance: 0.4
+      transform_tolerance: 0.5
 
       global_frame: odom  # 设置全局坐标系为"odom"，这通常是里程计坐标系
       robot_base_frame: base_link  # 机器人本体坐标系，通常为"base_link"
@@ -216,13 +216,13 @@ local_costmap:
       width: 3  # 局部代价地图的宽度，单位为米
       height: 3  # 局部代价地图的高度，单位为米
       resolution: 0.05  # 局部代价地图的分辨率，单位为米，表示每个网格的大小
-      robot_radius: 0.6  # 机器人半径，单位为米，用于在代价地图中考虑机器人的尺寸
+      robot_radius: 0.25  # 机器人半径，单位为米，用于在代价地图中考虑机器人的尺寸
       plugins: ["obstacle_layer", "inflation_layer"]  # 局部代价地图中使用的插件列表
 
       # InflationLayer插件，用于扩展障碍物的影响区域
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"  # 使用的插件类型
-        inflation_radius: 0.7  # 通常会将障碍物扩展一定的半径，以防止机器人碰撞
+        inflation_radius: 0.45  # 通常会将障碍物扩展一定的半径，以防止机器人碰撞
         cost_scaling_factor: 20.0  # 代价扩展因子，控制障碍物周围区域的代价值
 
       # ObstacleLayer插件，用于检测并标障碍物
@@ -290,7 +290,7 @@ global_costmap:
       global_frame: map  # 全局坐标系，这里设置为"map"表示全局地图坐标系
       robot_base_frame: base_link  # 机器人本体坐标系，这里使用"base_link"s
       use_sim_time: False  # 使用仿真时间，在仿真环境中通常为True
-      robot_radius: 0.3  # 机器人半径，单位为米，用于考虑机器人的尺寸
+      robot_radius: 0.25  # 机器人半径，单位为米，用于考虑机器人的尺寸
       resolution: 0.05  # 全局代价地图的分辨率，单位为米，表示每个网格的大小
       track_unknown_space: false  # 是否跟踪未知空间，启用时代价地图会填充未知空间
       plugins: ["static_layer", "obstacle_layer", "voxel_layer", "inflation_layer"]  # 使用的插件列表，包含静态层、障碍物层、体素层和膨胀层
@@ -344,7 +344,7 @@ global_costmap:
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"  # 使用的插件类型
         cost_scaling_factor: 10.0 # 代价扩展因子，控制障碍物周围区域的代价值
-        inflation_radius: 0.6  # 膨胀半径，用于控制障碍物周围区域的扩展距离
+        inflation_radius: 0.59  # 膨胀半径，用于控制障碍物周围区域的扩展距离
 
       always_send_full_costmap: True  # 是否总是发送完整的代价地图，通常为了减少传输的频率
 

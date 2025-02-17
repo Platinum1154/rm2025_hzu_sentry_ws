@@ -22,7 +22,7 @@ public:
             "/nav/control", 10, std::bind(&SerialDriverNode::callback, this, std::placeholders::_1));
         pub_ = this->create_publisher<rm_interfaces::msg::OdoMsg>("/nav/odo", 10);
         // 获取串口名称
-        _port_name = this->declare_parameter("~port_name", "/dev/ttyUSB3");
+        _port_name = this->declare_parameter("~port_name", "/dev/ttyUSB0");
 
         // 初始化串口
         try

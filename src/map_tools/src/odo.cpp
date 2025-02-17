@@ -30,7 +30,7 @@ private:
     void publishTransform(float x,float y,float radians){
         geometry_msgs::msg::TransformStamped transform;
             transform.header.stamp=this->get_clock()->now();
-            transform.header.frame_id = "map";
+            transform.header.frame_id = "odom";
             transform.child_frame_id = "base_link";
             transform.transform.translation.x=x;
             transform.transform.translation.y=y;

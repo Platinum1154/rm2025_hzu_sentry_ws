@@ -20,6 +20,8 @@ add_executable(save_point_cloud src/save_point_cloud.cpp)
 add_executable(serial_port src/serial_port.cpp)
 add_executable(clear_cost_map src/clear_cost_map.cpp)
 add_executable(odo src/odo.cpp)
+add_executable(nav2_to_goal src/nav2_to_goal.cpp)
+
 # add_executable(cmd_vel2serial src/cmd_vel2serial.cpp)
 
 
@@ -79,6 +81,17 @@ ament_target_dependencies(odo
   nav2_msgs
 )
 
+ament_target_dependencies(nav2_to_goal 
+  rclcpp 
+  sensor_msgs 
+  laser_geometry 
+  pcl_ros 
+  PCL
+  rm_interfaces
+  std_msgs
+  std_srvs
+  nav2_msgs
+)
 # ament_target_dependencies(cmd_vel2serial
 #   rclcpp 
 #   sensor_msgs 
@@ -98,6 +111,7 @@ install(TARGETS
   save_point_cloud
   clear_cost_map
   odo
+  nav2_to_goal
   # cmd_vel2serial
   DESTINATION lib/${PROJECT_NAME})
   
