@@ -73,27 +73,34 @@ int main(int argc, char** argv) {
     auto node = std::make_shared<NavToPoseClient>();
 
     // 提供x和y坐标
-    float target_x1 = -7.279947020176306f;
-    float target_y1 = 0.7360424262494546f;
-    std::cout << "send first point"<<std::endl;
+    float target_x1 = -1.9714107453768241f;//-7.279947020176306f
+    float target_y1 = -2.1101602610421963f;//0.7360424262494546f
+    std::cout << "send first point" << std::endl;
     // 调用sendGoal函数并传入目标坐标
     node->sendGoal(target_x1, target_y1);
 
-    std::cout << "start sleep"<<std::endl;
-        std::this_thread::sleep_for(std::chrono::seconds(10));
-	std::cout << "stop sleep"<<std::endl;
-    while(naving_flag){
-        std::cout << "i m here,i will slepp 1 seconds!"<<std::endl;
+    std::cout << "start sleep" << std::endl;
+    std::this_thread::sleep_for(std::chrono::seconds(5));
+    std::cout << "stop sleep" << std::endl;
+
+    int timeout = 20; // 超时时间为60秒
+    while (naving_flag && timeout > 0) {
+        std::cout << "i m here, i will sleep 1 seconds!" << std::endl;
         std::this_thread::sleep_for(std::chrono::seconds(1));
         rclcpp::spin_some(node);
-        rubbish = 1;
+        timeout--;
     }
-    std::cout << "out of while"<<std::endl;
+    if (timeout <= 0) {
+        std::cout << "导航超时，未到达目标点！" << std::endl;
+    }
+
+    std::cout << "out of while" << std::endl;
     float target_x2 = -0.22028685810277354f;
     float target_y2 = 0.1153494676282539f;
     // 调用sendGoal函数并传入目标坐标
     node->sendGoal(target_x2, target_y2);
-    std::cout << "send second point"<<std::endl;
+    std::cout << "send second point" << std::endl;
+
     rclcpp::spin(node);
     rclcpp::shutdown();
     return 0;

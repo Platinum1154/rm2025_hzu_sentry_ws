@@ -127,7 +127,7 @@ controller_server:
     general_goal_checker:
       stateful: True  # 是否为状态保持的目标检查器
       plugin: "nav2_controller::SimpleGoalChecker"  # 目标检查插件，检查是否到达目标
-      xy_goal_tolerance: 0.045  # 目标点位置容忍度（米），机器人到达目标位置的允许误差
+      xy_goal_tolerance: 0.05  # 目标点位置容忍度（米），机器人到达目标位置的允许误差
       yaw_goal_tolerance: 4.0  # 对于全向机器人，角度容忍度通常设置为0，因为全向机器人没有明显的“方向”
 
     # DWB (Dynamic Window Approach) parameters
@@ -171,7 +171,7 @@ controller_server:
       transform_tolerance: 0.2  # TF变换的容忍度（秒）
 
       # 目标位置和目标方向的容忍度
-      xy_goal_tolerance: 0.1  # 目标位置的容忍度（米）
+      xy_goal_tolerance: 0.05  # 目标位置的容忍度（米）
       trans_stopped_velocity: 0.03  # 停止时的速度阈值，低于此速度认为机器人已经停止
 
       # 快速路径评估

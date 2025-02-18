@@ -20,7 +20,7 @@ ros2 run map_tools odo
 - 导航 
 ros2 launch bot_navigation2 navigation2.launch.py use_sim_time:=False slam:=False map:=/home/morefine/rm2025_hzu_sentry_ws/slam_map.yaml
 
-- 单次定点导航
+- 定点导航
 ros2 run map_tools nav2_to_goal 
 
 - 导航数据打包成自定义消息 
