@@ -127,7 +127,7 @@ controller_server:
     general_goal_checker:
       stateful: True  # 是否为状态保持的目标检查器
       plugin: "nav2_controller::SimpleGoalChecker"  # 目标检查插件，检查是否到达目标
-      xy_goal_tolerance: 0.05  # 目标点位置容忍度（米），机器人到达目标位置的允许误差
+      xy_goal_tolerance: 0.15  # 目标点位置容忍度（米），机器人到达目标位置的允许误差
       yaw_goal_tolerance: 4.0  # 对于全向机器人，角度容忍度通常设置为0，因为全向机器人没有明显的“方向”
 
     # DWB (Dynamic Window Approach) parameters
@@ -184,15 +184,15 @@ controller_server:
       critics: ["RotateToGoal", "Oscillation", "BaseObstacle", "GoalAlign", "PathAlign", "PathDist", "GoalDist"]  # 评估器列表，用于评估当前路径的质量
 
       # 各种评估器的参数设置
-      BaseObstacle.scale: 250.0  # 障碍物评估的权重
-      PathAlign.scale: 1.0  # 路径对齐的权重
-      PathAlign.forward_point_distance: 0.1  # 路径对齐前进点的距离
-      GoalAlign.scale: 0.0  # 目标对齐的权重
-      GoalAlign.forward_point_distance: 0.1  # 目标对齐前进点的距离
-      PathDist.scale: 10.0  # 路径距离的权重
-      GoalDist.scale: 16.5  # 目标距离的权重
-      RotateToGoal.scale: 0.0  # 禁用旋转对齐
-      RotateToGoal.slowing_factor: 0.0  # 旋转的减速因子
+      BaseObstacle.scale: 250.0
+      PathAlign.scale: 32.0
+      PathAlign.forward_point_distance: 0.1
+      GoalAlign.scale: 24.0
+      GoalAlign.forward_point_distance: 0.1
+      PathDist.scale: 32.0
+      GoalDist.scale: 24.0
+      RotateToGoal.scale: 32.0
+      RotateToGoal.slowing_factor: 0.0
       RotateToGoal.lookahead_time: -1.0  # 旋转目标的前瞻时间（负值表示禁用
       holonomic_robot: true
 
@@ -213,8 +213,8 @@ local_costmap:
       robot_base_frame: base_link  # 机器人本体坐标系，通常为"base_link"
       use_sim_time: False  # 是否使用仿真时间，通常在仿真环境中为True。设置为False表示使用系统时间
       rolling_window: true  # 是否启用滚动窗口模式，表示局部地图是一个不断更新的窗口
-      width: 3  # 局部代价地图的宽度，单位为米
-      height: 3  # 局部代价地图的高度，单位为米
+      width: 5  # 局部代价地图的宽度，单位为米
+      height: 5  # 局部代价地图的高度，单位为米
       resolution: 0.05  # 局部代价地图的分辨率，单位为米，表示每个网格的大小
       robot_radius: 0.25  # 机器人半径，单位为米，用于在代价地图中考虑机器人的尺寸
       plugins: ["obstacle_layer", "inflation_layer"]  # 局部代价地图中使用的插件列表
@@ -222,8 +222,8 @@ local_costmap:
       # InflationLayer插件，用于扩展障碍物的影响区域
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"  # 使用的插件类型
-        inflation_radius: 0.45  # 通常会将障碍物扩展一定的半径，以防止机器人碰撞
-        cost_scaling_factor: 20.0  # 代价扩展因子，控制障碍物周围区域的代价值
+        inflation_radius: 0.8  # 通常会将障碍物扩展一定的半径，以防止机器人碰撞
+        cost_scaling_factor: 0.5  # 代价扩展因子，控制障碍物周围区域的代价值
 
       # ObstacleLayer插件，用于检测并标障碍物
       obstacle_layer:
@@ -233,7 +233,7 @@ local_costmap:
         observation_sources: scan  # 从扫描数据中获取障碍物信息 ///////////////明天调这里
         scan:
           topic: /merged_scan  # 激光雷达数据的主题，通常是合并的扫描数据
-          max_obstacle_height: 0.5  # 障碍物的最大高度，超过此高度的物体不会被认为是障碍物
+          max_obstacle_height: 1.5  # 障碍物的最大高度，超过此高度的物体不会被认为是障碍物
           clearing: True  # 启用清除，表示当障碍物移除时，地图中的代价也会被清除
           marking: True  # 启用标记，表示障碍物会被标记在代价地图中
           data_type: "LaserScan"  # 数据类型，这里使用"LaserScan"
@@ -303,7 +303,7 @@ global_costmap:
         observation_sources: scan  # 是类型 从合并的激光扫描数据中获取障碍物信息
         scan:
           topic: /merged_scan  # 激光扫描数据的主题
-          max_obstacle_height: 0.5  # 障碍物的最大高度，超过此高度的物体不会被认为是障碍物
+          max_obstacle_height: 1.5 # 障碍物的最大高度，超过此高度的物体不会被认为是障碍物
           clearing: True  # 启用清除，表示障碍物被移除后，地图中的代价也会被清除
           marking: True  # 启用标记，表示障碍物会被标记在代价地图中
           data_type: "LaserScan"  # 数据类型，这里使用"LaserScan"
@@ -344,7 +344,7 @@ global_costmap:
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"  # 使用的插件类型
         cost_scaling_factor: 10.0 # 代价扩展因子，控制障碍物周围区域的代价值
-        inflation_radius: 0.59  # 膨胀半径，用于控制障碍物周围区域的扩展距离
+        inflation_radius: 0.8  # 膨胀半径，用于控制障碍物周围区域的扩展距离
 
       always_send_full_costmap: True  # 是否总是发送完整的代价地图，通常为了减少传输的频率
 

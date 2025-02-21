@@ -87,7 +87,7 @@ void mergeAndPublish() {
         
         //滤波器
         Eigen::Vector4f min_point(-0.35, -0.35, -1000.0, 1.0); // 正方形的最小点 (x_min, y_min, z_min)
-        Eigen::Vector4f max_point(0.45, 0.45, 1000.0, 1.0);    // 正方形的最大点 (x_max, y_max, z_max)
+        Eigen::Vector4f max_point(0.35, 0.35, 1000.0, 1.0);    // 正方形的最大点 (x_max, y_max, z_max)
 
         // 创建CropBox滤波器
         pcl::CropBox<pcl::PointXYZ> crop_box_filter;
