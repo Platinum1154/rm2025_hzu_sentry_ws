@@ -77,18 +77,18 @@ private:
                 uint8_t data;
                 serial_port_.read(&data, 1);
                 buffer.push_back(data);
-                
-                if (buffer.size() >= 28 && buffer[0] == 0x4A && buffer[25] == 0x2b)  // 校验帧头和包的最小长度
+                //1+4+4+4+2*9+1+1=33
+                if (buffer.size() >= 33 && buffer[0] == 0x4A && buffer[32] == 0x2b)  // 校验帧头和包的最小长度
                 {
                     // for(int i =0;i<29;i++){
                     //     printf("%d:%02x\n",i,buffer[i]);
                     // }
                     // 取出最后两个字节作为 CRC 校验码
-                    uint16_t received_crc = ((uint16_t)buffer[25] << 8) | buffer[26];  // CRC 校验码在最后两位
-                    std::vector<uint8_t> packet(buffer.begin(), buffer.begin() + 27);  // 剩余数据部分
+                    //uint16_t received_crc = ((uint16_t)buffer[25] << 8) | buffer[26];  // CRC 校验码在最后两位
+                    std::vector<uint8_t> packet(buffer.begin(), buffer.begin() + 32);  // 剩余数据部分
                     
                     // 计算 CRC 校验码
-                    uint16_t calculated_crc = calculateCRC16(packet);
+                    //uint16_t calculated_crc = calculateCRC16(packet);
                     //printf("CRC: %04X %04X\n",received_crc,calculated_crc);
                     //if (received_crc == calculated_crc)
                     {
@@ -106,7 +106,7 @@ private:
                 {
                     buffer.clear();  // 清除无效数据
                 }
-                else if (buffer.size()>26&& buffer[25] != 0x2b)
+                else if (buffer.size()>=33 && buffer[32] != 0x2b)
                 {
                     buffer.clear();  // 清除无效数据
                 }
@@ -157,21 +157,35 @@ private:
     void processPacket(const std::vector<uint8_t> &packet)
     {
 
-        // 解析6个32位浮动数
-        float parsed_floats[6];
-        for (int i = 0; i < 6; ++i)
+        // 解析3个32位浮动数
+        float parsed_floats[3];
+        uint16_t parsed_uint16s[9];
+        uint8_t parsed_uint8s[1];
+        for (int i = 0; i < 3; ++i)
         {
             // 取出每个32位浮动数的4个字节
             uint8_t bytes[4] = { packet[i*4+1], packet[i*4+2], packet[i*4+3], packet[i*4+4] };
             std::memcpy(&parsed_floats[i], bytes, sizeof(float));
         }
-
+        
+        for (int i = 0; i < 9; ++i)
+        {
+            // 取出每个32位浮动数的4个字节
+            uint8_t bytes[2] = { packet[12+i*2+1], packet[12+i*2+2] };
+            std::memcpy(&parsed_uint16s[i], bytes, sizeof(uint16_t));
+        }
+        parsed_uint8s[0]=packet[31];
         // 打印接收到的6个浮动数
         RCLCPP_INFO(this->get_logger(), "Received floats: ");
-        for (int i = 0; i < 6; ++i)
+        for (int i = 0; i < 3; ++i)
         {
             RCLCPP_INFO(this->get_logger(), "Float %d: %f", i, parsed_floats[i]);
         }
+        for (int i = 0; i < 9; ++i)
+        {
+            RCLCPP_INFO(this->get_logger(), "uint16_t %d: %d", i, parsed_uint16s[i]);
+        }
+        RCLCPP_INFO(this->get_logger(), "uint8_t 0: %d", parsed_uint8s[0]);
         odomsg.vx=parsed_floats[0];
         odomsg.vy=parsed_floats[1];
         odomsg.yaw=parsed_floats[2];
