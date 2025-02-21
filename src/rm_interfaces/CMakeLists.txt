@@ -38,6 +38,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/SerialReceive.msg"
   "msg/NavigationMsg.msg"
   "msg/OdoMsg.msg"
+  "msg/Decision.msg"
   DEPENDENCIES std_msgs
 )
 

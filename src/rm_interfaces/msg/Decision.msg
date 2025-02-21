@@ -1,12 +1,12 @@
 # 决策数据
 std_msgs/Header header
-uint16_t self_sentry_HP     # 我方哨兵血量
-uint16_t self_hero_HP       # 我方英雄血量
-uint16_t self_infantry_HP   # 我方步兵血量
-uint16_t enemy_sentry_HP    # 敌方哨兵血量 
-uint16_t enemy_hero_HP      # 敌方英雄血量
-uint16_t enemy_infantry_HP  # 敌方步兵血量
-uint16_t remain_time        # 剩余时间
-uint16_t remain_bullet      # 剩余子弹
-uint16_t reversed           # 空位
-uint8_t occupation          # 事件
+uint16 self_sentry_hp     # 我方哨兵血量
+uint16 self_hero_hp       # 我方英雄血量
+uint16 self_infantry_hp   # 我方步兵血量
+uint16 enemy_sentry_hp    # 敌方哨兵血量 
+uint16 enemy_hero_hp      # 敌方英雄血量
+uint16 enemy_infantry_hp  # 敌方步兵血量
+uint16 remain_time        # 剩余时间
+uint16 remain_bullet      # 剩余子弹
+uint16 reversed           # 空位
+uint8 occupation          # 事件

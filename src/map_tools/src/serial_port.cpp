@@ -5,8 +5,8 @@
 #include "rm_interfaces/msg/navigation_msg.hpp"
 #include <serial/serial.h>
 #include "rm_interfaces/msg/odo_msg.hpp"
-
-
+#include "rm_interfaces/msg/serial_receive.hpp"
+#include "rm_interfaces/msg/decision.hpp"
 #define BAUDRATE 115200
 
 std::atomic_bool receive_thread_running;
@@ -21,6 +21,7 @@ public:
         sub_ = this->create_subscription<rm_interfaces::msg::NavigationMsg>(
             "/nav/control", 10, std::bind(&SerialDriverNode::callback, this, std::placeholders::_1));
         pub_ = this->create_publisher<rm_interfaces::msg::OdoMsg>("/nav/odo", 10);
+        pub_decision_ = this->create_publisher<rm_interfaces::msg::Decision>("nav/decision", 10);
         // 获取串口名称
         _port_name = this->declare_parameter("~port_name", "/dev/ttyUSB0");
 
@@ -190,6 +191,17 @@ private:
         odomsg.vy=parsed_floats[1];
         odomsg.yaw=parsed_floats[2];
         pub_->publish(odomsg);
+        decision.self_sentry_hp = parsed_uint16s[0];        // 我方哨兵血量
+        decision.self_hero_hp = parsed_uint16s[1];          // 我方英雄血量
+        decision.self_infantry_hp = parsed_uint16s[2];      // 我方步兵血量
+        decision.enemy_sentry_hp = parsed_uint16s[3];       // 敌方哨兵血量
+        decision.enemy_hero_hp = parsed_uint16s[4];         // 敌方英雄血量
+        decision.enemy_infantry_hp = parsed_uint16s[5];     // 敌方步兵血量
+        decision.remain_time = parsed_uint16s[6];           // 剩余时间
+        decision.remain_bullet = parsed_uint16s[7];         // 剩余子弹
+        decision.reversed = parsed_uint16s[8];              // 空位
+        decision.occupation = parsed_uint8s[0];             // 事件
+        pub_decision_->publish(decision);
 
 
     }
@@ -245,7 +257,9 @@ private:
     rclcpp::Subscription<rm_interfaces::msg::NavigationMsg>::SharedPtr sub_;
     std::vector<uint8_t> control;
     rclcpp::Publisher<rm_interfaces::msg::OdoMsg>::SharedPtr pub_;
+    rclcpp::Publisher<rm_interfaces::msg::Decision>::SharedPtr pub_decision_;
     rm_interfaces::msg::OdoMsg odomsg;
+    rm_interfaces::msg::Decision decision;
     serial::Serial serial_port_;
     std::string _port_name;
     volatile long second = 0;
