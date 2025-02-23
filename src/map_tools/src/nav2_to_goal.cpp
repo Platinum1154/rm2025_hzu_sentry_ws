@@ -5,6 +5,7 @@
 #include <iostream>       // std::cout, std::endl
 #include <thread>         // std::this_thread::sleep_for
 #include <chrono>         // std::chrono::seconds
+#include "rm_interfaces/msg/decision.hpp"
 
 using NavigationAction = nav2_msgs::action::NavigateToPose;  // 定义导航动作类型为NavigateToPose
 volatile int naving_flag = 0;   // 是否在导航
@@ -67,7 +68,12 @@ int main(int argc, char** argv) {
     rclcpp::init(argc, argv);
     auto node = std::make_shared<NavToPoseClient>();
 
-    // 提供第一个目标点的x和y坐标
+    // 等待比赛开始
+
+
+
+    // 开局冲刺（冲刺至中心点）
+    // 中心点坐标
     float target_x1 = -7.279947020176306f;
     float target_y1 = 0.7360424262494546f;
     // 调用sendGoal函数并传入目标坐标
@@ -93,7 +99,14 @@ int main(int argc, char** argv) {
 
     std::cout << "out of while" << std::endl;
 
-    // 提供第二个目标点的x和y坐标
+    //等待条件判断（血量较低时回家补给）
+
+
+
+    //巡航模式
+
+
+    // 基地坐标
     float target_x2 = -0.22028685810277354f;
     float target_y2 = 0.1153494676282539f;
     // 调用sendGoal函数并传入第二个目标坐标

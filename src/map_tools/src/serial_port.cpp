@@ -78,15 +78,15 @@ private:
                 uint8_t data;
                 serial_port_.read(&data, 1);
                 buffer.push_back(data);
-                //1+4+4+4+2*9+1+1=33
-                if (buffer.size() >= 33 && buffer[0] == 0x4A && buffer[32] == 0x2b)  // 校验帧头和包的最小长度
+                //1+4+4+4+2*8+1+1=3
+                if (buffer.size() >= 32 && buffer[0] == 0x4A && buffer[31] == 0x2b)  // 校验帧头和包的最小长度
                 {
-                    // for(int i =0;i<29;i++){
+                    // for(int i =0;i<32;i++){
                     //     printf("%d:%02x\n",i,buffer[i]);
                     // }
                     // 取出最后两个字节作为 CRC 校验码
                     //uint16_t received_crc = ((uint16_t)buffer[25] << 8) | buffer[26];  // CRC 校验码在最后两位
-                    std::vector<uint8_t> packet(buffer.begin(), buffer.begin() + 32);  // 剩余数据部分
+                    std::vector<uint8_t> packet(buffer.begin(), buffer.begin() + 31);  // 剩余数据部分
                     
                     // 计算 CRC 校验码
                     //uint16_t calculated_crc = calculateCRC16(packet);
@@ -107,7 +107,7 @@ private:
                 {
                     buffer.clear();  // 清除无效数据
                 }
-                else if (buffer.size()>=33 && buffer[32] != 0x2b)
+                else if (buffer.size()>=32 && buffer[31] != 0x2b)
                 {
                     buffer.clear();  // 清除无效数据
                 }
@@ -154,14 +154,13 @@ private:
         }
         control.clear();
     }
-
     void processPacket(const std::vector<uint8_t> &packet)
     {
-
         // 解析3个32位浮动数
         float parsed_floats[3];
-        uint16_t parsed_uint16s[9];
-        uint8_t parsed_uint8s[1];
+        uint16_t parsed_uint16s[8];  
+        uint8_t parsed_uint8s[2];     // 用于存储 reversed
+
         for (int i = 0; i < 3; ++i)
         {
             // 取出每个32位浮动数的4个字节
@@ -169,43 +168,51 @@ private:
             std::memcpy(&parsed_floats[i], bytes, sizeof(float));
         }
         
-        for (int i = 0; i < 9; ++i)
+        for (int i = 0; i < 8; ++i)  
         {
-            // 取出每个32位浮动数的4个字节
+            // 取出每个16位无符号整数的2个字节
             uint8_t bytes[2] = { packet[12+i*2+1], packet[12+i*2+2] };
             std::memcpy(&parsed_uint16s[i], bytes, sizeof(uint16_t));
         }
-        parsed_uint8s[0]=packet[31];
-        // 打印接收到的6个浮动数
+
+        
+
+        parsed_uint8s[0] = packet[29];  // 解析 reversed
+        parsed_uint8s[1] = packet[30]; 
+        // 打印接收到的浮动数
         RCLCPP_INFO(this->get_logger(), "Received floats: ");
         for (int i = 0; i < 3; ++i)
         {
             RCLCPP_INFO(this->get_logger(), "Float %d: %f", i, parsed_floats[i]);
         }
-        for (int i = 0; i < 9; ++i)
+        for (int i = 0; i < 8; ++i)  
         {
             RCLCPP_INFO(this->get_logger(), "uint16_t %d: %d", i, parsed_uint16s[i]);
+        }        
+        for (int i = 0; i < 2; ++i)  
+        {
+            RCLCPP_INFO(this->get_logger(), "uint8_t %d: %d", i, parsed_uint8s[i]);
         }
-        RCLCPP_INFO(this->get_logger(), "uint8_t 0: %d", parsed_uint8s[0]);
-        odomsg.vx=parsed_floats[0];
-        odomsg.vy=parsed_floats[1];
-        odomsg.yaw=parsed_floats[2];
+
+
+        // 更新决策信息
+        odomsg.vx = parsed_floats[0];
+        odomsg.vy = parsed_floats[1];
+        odomsg.yaw = parsed_floats[2];
         pub_->publish(odomsg);
-        decision.self_sentry_hp = parsed_uint16s[0];        // 我方哨兵血量
-        decision.self_hero_hp = parsed_uint16s[1];          // 我方英雄血量
-        decision.self_infantry_hp = parsed_uint16s[2];      // 我方步兵血量
-        decision.enemy_sentry_hp = parsed_uint16s[3];       // 敌方哨兵血量
-        decision.enemy_hero_hp = parsed_uint16s[4];         // 敌方英雄血量
-        decision.enemy_infantry_hp = parsed_uint16s[5];     // 敌方步兵血量
-        decision.remain_time = parsed_uint16s[6];           // 剩余时间
-        decision.remain_bullet = parsed_uint16s[7];         // 剩余子弹
-        decision.reversed = parsed_uint16s[8];              // 空位
-        decision.occupation = parsed_uint8s[0];             // 事件
+        
+        decision.self_sentry_hp = parsed_uint16s[0];         // 我方哨兵血量
+        decision.self_hero_hp = parsed_uint16s[1];           // 我方英雄血量
+        decision.self_infantry_hp = parsed_uint16s[2];       // 我方步兵血量
+        decision.enemy_sentry_hp = parsed_uint16s[3];        // 敌方哨兵血量
+        decision.enemy_hero_hp = parsed_uint16s[4];          // 敌方英雄血量
+        decision.enemy_infantry_hp = parsed_uint16s[5];      // 敌方步兵血量
+        decision.remain_time = parsed_uint16s[6];            // 剩余时间
+        decision.remain_bullet = parsed_uint16s[7];          // 剩余子弹
+        decision.reversed = parsed_uint8s[0];                // 比赛状况
+        decision.occupation = parsed_uint8s[1];              // 事件
         pub_decision_->publish(decision);
-
-
     }
-
     float i = 0;
     
     void callback(const rm_interfaces::msg::NavigationMsg::SharedPtr msg)
