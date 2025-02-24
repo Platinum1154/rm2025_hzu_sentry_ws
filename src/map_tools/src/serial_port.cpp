@@ -159,7 +159,7 @@ private:
         // 解析3个32位浮动数
         float parsed_floats[3];
         uint16_t parsed_uint16s[8];  
-        uint8_t parsed_uint8s[2];     // 用于存储 reversed
+        uint8_t parsed_uint8s[2];     // 用于存储 match_progress
 
         for (int i = 0; i < 3; ++i)
         {
@@ -177,7 +177,7 @@ private:
 
         
 
-        parsed_uint8s[0] = packet[29];  // 解析 reversed
+        parsed_uint8s[0] = packet[29];  // 解析 match_progress
         parsed_uint8s[1] = packet[30]; 
         // 打印接收到的浮动数
         RCLCPP_INFO(this->get_logger(), "Received floats: ");
@@ -209,7 +209,7 @@ private:
         decision.enemy_infantry_hp = parsed_uint16s[5];      // 敌方步兵血量
         decision.remain_time = parsed_uint16s[6];            // 剩余时间
         decision.remain_bullet = parsed_uint16s[7];          // 剩余子弹
-        decision.reversed = parsed_uint8s[0];                // 比赛状况
+        decision.match_progress = parsed_uint8s[0];                // 比赛状况
         decision.occupation = parsed_uint8s[1];              // 事件
         pub_decision_->publish(decision);
     }

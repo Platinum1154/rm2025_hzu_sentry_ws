@@ -5,7 +5,7 @@
 #include <iostream>       // std::cout, std::endl
 #include <thread>         // std::this_thread::sleep_for
 #include <chrono>         // std::chrono::seconds
-#include "rm_interfaces/msg/decision.hpp"
+#include "rm_interfaces/msg/decision.hpp"  
 
 using NavigationAction = nav2_msgs::action::NavigateToPose;  // 定义导航动作类型为NavigateToPose
 volatile int naving_flag = 0;   // 是否在导航
@@ -19,6 +19,17 @@ public:
         // 创建导航动作客户端
         action_client_ = rclcpp_action::create_client<NavigationAction>(
             this, "navigate_to_pose");
+
+        // 创建决策消息的订阅者
+        decision_subscriber_ = this->create_subscription<rm_interfaces::msg::Decision>(
+            "nav/decision",  // 替换为实际话题名称
+            10,
+            std::bind(&NavToPoseClient::decisionCallback, this, std::placeholders::_1));
+    }
+
+    void decisionCallback(const rm_interfaces::msg::Decision::SharedPtr msg) {
+        // 更新决策数据
+        decision_data_ = *msg;  // 将接收到的消息拷贝到成员变量中
     }
 
     void sendGoal(float x, float y) {
@@ -39,8 +50,10 @@ public:
             [this](NavigationActionGoalHandle::SharedPtr goal_handle) {
             if (goal_handle) {
                 RCLCPP_INFO(get_logger(), "目标点已被服务器接收");
+                current_goal_handle_ = goal_handle;  // 保存目标句柄
             }
         };
+
         // 设置执行结果回调函数
         send_goal_options.result_callback =
             [this](const NavigationActionGoalHandle::WrappedResult& result) {
@@ -49,70 +62,88 @@ public:
                 naving_flag = 0;  // 设置导航标志为完成
             }
         };
+
         // 发送导航目标点
         action_client_->async_send_goal(goal_msg, send_goal_options);
     }
 
-    // 新增取消目标点的函数
-    void cancelGoal(NavigationActionGoalHandle::SharedPtr goal_handle) {
-        if (goal_handle) {
-            action_client_->async_cancel_goal(goal_handle);
-            RCLCPP_INFO(get_logger(), "已取消目标点。");
+    void cancelGoal() {
+        if (current_goal_handle_) {
+            action_client_->async_cancel_goal(current_goal_handle_);  // 取消目标点
+            RCLCPP_INFO(this->get_logger(), "目标点已被取消");
+        } else {
+            RCLCPP_WARN(this->get_logger(), "没有目标点可以取消");
         }
     }
 
     NavigationActionClient::SharedPtr action_client_;
+    rclcpp::Subscription<rm_interfaces::msg::Decision>::SharedPtr decision_subscriber_;  // 决策消息的订阅者
+    rm_interfaces::msg::Decision decision_data_;  // 存储接收到的决策数据
+    NavigationActionGoalHandle::SharedPtr current_goal_handle_;  // 当前目标句柄
 };
 
 int main(int argc, char** argv) {
     rclcpp::init(argc, argv);
     auto node = std::make_shared<NavToPoseClient>();
 
-    // 等待比赛开始
+    // 等待比赛开始的循环
+    while (rclcpp::ok() && node->decision_data_.match_progress != 4) {
+        std::this_thread::sleep_for(std::chrono::seconds(1));  // 每隔1秒检查一次
+        std::cout << "等待比赛开始..." << std::endl;
+        rclcpp::spin_some(node);  // 处理回调
+    }
 
+    // 决策逻辑：当比赛开始后，冲向目标点
+    if (node->decision_data_.match_progress == 4) {
+        // 设定目标点坐标（示例值）
+        float target_x = -7.279947020176306f;  // 目标点x坐标
+        float target_y = 0.7360424262494546f;   // 目标点y坐标
+        RCLCPP_INFO(node->get_logger(), "比赛开始，冲向目标点(%f, %f)", target_x, target_y);
+        node->sendGoal(target_x, target_y);  // 调用导航方法
+    }
 
-
-    // 开局冲刺（冲刺至中心点）
-    // 中心点坐标
-    float target_x1 = -7.279947020176306f;
-    float target_y1 = 0.7360424262494546f;
-    // 调用sendGoal函数并传入目标坐标
-    node->sendGoal(target_x1, target_y1);
-
-    std::cout << "start sleep" << std::endl;
-    std::this_thread::sleep_for(std::chrono::seconds(5));
-    std::cout << "stop sleep" << std::endl;
-
+    // 等待导航完成
     int timeout = 20; // 超时时间为20秒
-    rclcpp_action::ClientGoalHandle<NavigationAction>::SharedPtr goal_handle; // 定义目标句柄
+
     while (naving_flag && timeout > 0) {
-        std::cout << "i m here, i will sleep 1 seconds!" << std::endl;
+        std::cout << "导航中，剩余时间：" << timeout << "秒" << std::endl;
         std::this_thread::sleep_for(std::chrono::seconds(1));
-        rclcpp::spin_some(node);
+        rclcpp::spin_some(node);  // 处理回调
         timeout--;
     }
 
     if (timeout <= 0) {
         std::cout << "导航超时，未到达目标点！" << std::endl;
-        node->cancelGoal(goal_handle);  // 超时后取消目标点
+
+        // 取消目标点
+        node->cancelGoal();  // 调用取消目标的方法
+    } 
+        // 第一阶段成功后进行第二阶段决策
+        // 判断自身血量是否低于100
+// 循环判断血量状态
+    while (rclcpp::ok()) {
+        // 每隔1秒检查一次血量
+        std::this_thread::sleep_for(std::chrono::seconds(1));
+
+        // 重新获取最新的决策数据
+        // 这里假设你有一个方法可以更新决策数据
+        // node->updateDecisionData();
+
+        if (node->decision_data_.self_sentry_hp < 100) {
+            // 返回补给点（补给点坐标待定）
+            float supply_x = -0.22028685810277354f;  // 补给点x坐标（示例值）
+            float supply_y = 0.1153494676282539f;   // 补给点y坐标（示例值）
+            RCLCPP_INFO(node->get_logger(), "血量低于100，返回补给点(%f, %f)", supply_x, supply_y);
+            node->sendGoal(supply_x, supply_y);  // 调用返回补给点的方法
+        } else {
+            // 血量高于100，保持原地；‘
+        
+            RCLCPP_INFO(node->get_logger(), "血量高于100，保持原地。");
+        }
+
+        // 处理回调
+        rclcpp::spin_some(node);
     }
-
-    std::cout << "out of while" << std::endl;
-
-    //等待条件判断（血量较低时回家补给）
-
-
-
-    //巡航模式
-
-
-    // 基地坐标
-    float target_x2 = -0.22028685810277354f;
-    float target_y2 = 0.1153494676282539f;
-    // 调用sendGoal函数并传入第二个目标坐标
-    node->sendGoal(target_x2, target_y2);
-    std::cout << "send second point" << std::endl;
-
     rclcpp::spin(node);
     rclcpp::shutdown();
     return 0;
