@@ -23,7 +23,7 @@ public:
         pub_ = this->create_publisher<rm_interfaces::msg::OdoMsg>("/nav/odo", 10);
         pub_decision_ = this->create_publisher<rm_interfaces::msg::Decision>("nav/decision", 10);
         // 获取串口名称
-        _port_name = this->declare_parameter("~port_name", "/dev/ttyUSB0");
+        _port_name = this->declare_parameter("~port_name", "/dev/ttyACM0");
 
         // 初始化串口
         try
