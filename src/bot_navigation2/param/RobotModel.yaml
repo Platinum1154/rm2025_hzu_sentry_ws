@@ -136,14 +136,14 @@ controller_server:
       debug_trajectory_details: True  # 是否启用轨迹调试，输出轨迹计算的详细信息
 
       # 速度限制
-      min_vel_x: -0.22  # x轴的最小线速度（米/秒）
-      min_vel_y: -0.22  # y轴的最小线速度（米/秒）
-      max_vel_x: 0.22  # x轴的最大线速度（米/秒）
-      max_vel_y: 0.22  # y轴的最大线速度（米/秒）
+      min_vel_x: -0.35  # x轴的最小线速度（米/秒）
+      min_vel_y: -0.35 # y轴的最小线速度（米/秒）
+      max_vel_x: 0.35  # x轴的最大线速度（米/秒）
+      max_vel_y: 0.35  # y轴的最大线速度（米/秒）
       max_vel_theta: 0.0  # 禁用角速度（全向机器人只依赖于线速度）
 
       min_speed_xy: 0.0  # 最小线速度（米/秒）
-      max_speed_xy: 0.22  # 最大线速度（米/秒）
+      max_speed_xy: 0.35  # 最大线速度（米/秒）
       min_speed_theta: 0.0  # 最小角速度（弧度/秒）
 
       # 加速度和减速度限制
@@ -171,7 +171,7 @@ controller_server:
       transform_tolerance: 0.2  # TF变换的容忍度（秒）
 
       # 目标位置和目标方向的容忍度
-      xy_goal_tolerance: 0.05  # 目标位置的容忍度（米）
+      xy_goal_tolerance: 0.15  # 目标位置的容忍度（米）
       trans_stopped_velocity: 0.03  # 停止时的速度阈值，低于此速度认为机器人已经停止
 
       # 快速路径评估
@@ -222,7 +222,7 @@ local_costmap:
       # InflationLayer插件，用于扩展障碍物的影响区域
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"  # 使用的插件类型
-        inflation_radius: 0.8  # 通常会将障碍物扩展一定的半径，以防止机器人碰撞
+        inflation_radius: 0.6  # 通常会将障碍物扩展一定的半径，以防止机器人碰撞
         cost_scaling_factor: 0.5  # 代价扩展因子，控制障碍物周围区域的代价值
 
       # ObstacleLayer插件，用于检测并标障碍物
@@ -380,7 +380,7 @@ planner_server:
     GridBased:
       plugin: "nav2_navfn_planner/NavfnPlanner"  # 使用Navfn规划器插件
       tolerance: 0.5  # 路径规划的目标容忍度，单位为米，表示目标位置的误差
-      use_astar: true  # 是否使用A*算法，设置为false使用Dijkstra算法
+      use_astar: false  # 是否使用A*算法，设置为false使用Dijkstra算法
       allow_unknown: true  # 是否允许规划路径穿过未知区域
 
 planner_server_rclcpp_node:
