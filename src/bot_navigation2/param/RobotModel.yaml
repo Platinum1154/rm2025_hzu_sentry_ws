@@ -196,76 +196,78 @@ controller_server:
       RotateToGoal.lookahead_time: -1.0  # 旋转目标的前瞻时间（负值表示禁用
       holonomic_robot: true
 
-controller_server_rclcpp_node:
-  ros__parameters:
-    use_sim_time: False  # 是否使用仿真时间，通常在仿真环境中为True。设置为False表示使用系统时间
-
-
 
 local_costmap:
   local_costmap:
     ros__parameters:
-      update_frequency: 30.0  # 更新频率，单位为Hz，控制局部代价地图更新的频率
-      publish_frequency: 10.0  # 发布频率，单位为Hz，控制局部代价地图发布的频率
-      transform_tolerance: 0.5
-
-      global_frame: odom  # 设置全局坐标系为"odom"，这通常是里程计坐标系
-      robot_base_frame: base_link  # 机器人本体坐标系，通常为"base_link"
-      use_sim_time: False  # 是否使用仿真时间，通常在仿真环境中为True。设置为False表示使用系统时间
-      rolling_window: true  # 是否启用滚动窗口模式，表示局部地图是一个不断更新的窗口
-      width: 5  # 局部代价地图的宽度，单位为米
-      height: 5  # 局部代价地图的高度，单位为米
-      resolution: 0.05  # 局部代价地图的分辨率，单位为米，表示每个网格的大小
-      robot_radius: 0.25  # 机器人半径，单位为米，用于在代价地图中考虑机器人的尺寸
-      plugins: ["obstacle_layer", "inflation_layer"]  # 局部代价地图中使用的插件列表
-
-      # InflationLayer插件，用于扩展障碍物的影响区域
+      update_frequency: 30.0
+      publish_frequency: 10.0
+      global_frame: odom
+      robot_base_frame: base_link
+      use_sim_time: False
+      rolling_window: true
+      width: 5
+      height: 5
+      resolution: 0.05
+      robot_radius: 0.25
+      plugins: ["obstacle_layer", "inflation_layer"]
       inflation_layer:
-        plugin: "nav2_costmap_2d::InflationLayer"  # 使用的插件类型
-        inflation_radius: 0.6  # 通常会将障碍物扩展一定的半径，以防止机器人碰撞
-        cost_scaling_factor: 0.5  # 代价扩展因子，控制障碍物周围区域的代价值
-
-      # ObstacleLayer插件，用于检测并标障碍物
+        plugin: "nav2_costmap_2d::InflationLayer"
+        cost_scaling_factor: 0.5
+        inflation_radius: 0.6
       obstacle_layer:
-        plugin: "nav2_costmap_2d::ObstacleLayer"  # 使用的插件类型
-        enabled: True  # 启用障碍物层
-        footprint_clearing_enabled: True
-        observation_sources: scan  # 从扫描数据中获取障碍物信息 ///////////////明天调这里
+        plugin: "nav2_costmap_2d::ObstacleLayer"
+        enabled: True
+        observation_sources: scan 
+        max_obstacle_height: 1.0
+        min_obstacle_height: -1.0
+        # rplidar:
+        #   topic: /rplidar/scan
+        #   max_obstacle_height: 1.0
+        #   min_obstacle_height: -1.0
+        #   clearing: True
+        #   marking: True
+        #   data_type: "LaserScan"
+        #   raytrace_max_range: 3.0
+        #   raytrace_min_range: 0.0
+        #   obstacle_max_range: 2.5
+        #   obstacle_min_range: 0.0
         scan:
-          topic: /merged_scan  # 激光雷达数据的主题，通常是合并的扫描数据
-          max_obstacle_height: 1.5  # 障碍物的最大高度，超过此高度的物体不会被认为是障碍物
-          clearing: True  # 启用清除，表示当障碍物移除时，地图中的代价也会被清除
-          marking: True  # 启用标记，表示障碍物会被标记在代价地图中
-          data_type: "LaserScan"  # 数据类型，这里使用"LaserScan"
-
-      # # VoxelLayer插件，用于根据扫描数据创建体素地图
+          topic: /merged_scan 
+          max_obstacle_height: 1.0
+          min_obstacle_height: -1.0
+          clearing: True
+          marking: True
+          data_type: "LaserScan"
+          raytrace_max_range: 10.0
+          raytrace_min_range: 0.1
+          obstacle_max_range: 10.0
+          obstacle_min_range: 0.2
       # voxel_layer:
-      #   plugin: "nav2_costmap_2d::VoxelLayer"  # 使用的插件类型
-      #   enabled: True  # 启用体素层
-      #   publish_voxel_map: True  # 发布体素地图
-      #   origin_z: 0.0  # 体素地图的原点高度，通常为0，表示地图的地面
-      #   z_resolution: 0.1  # 体素的Z轴分辨率，控制体素的高度分辨率
-      #   z_voxels: 0  # Z轴体素的数量，控制体素在垂直方向上的分辨率
-      #   max_obstacle_height: 1.0  # 体素层中障碍物的最大高度，超过此高度的物体不会被认为是障碍物
-      #   mark_threshold: 0  # 用于标记障碍物的阈值
-      #   observation_sources: scan  # 从哪个数据源获取障碍物信息，这里是合并扫描数据
-      #   footprint_clearing_enabled: True
-      #   scan:
-      #     topic: /merged_scan  # 激光扫描数据的主题
-      #     max_obstacle_height: 0.5  # 设置最大障碍物高度
-      #     clearing: True  # 启用清除
-      #     marking: False   # 启用标记
-      #     data_type: "LaserScan"  # 数据类型
-      #     raytrace_max_range: 3.0  # 光线追踪的最大范围，表示扫描数据的最大有效距离
-      #     raytrace_min_range: 0.0  # 光线追踪的最小范围，表示扫描数据的最小有效距离
-      #     obstacle_max_range: 2.0  # 障碍物检测的最大有效范围
-      #     obstacle_min_range: 0.0  # 障碍物检测的最小有效范围
-
-      # StaticLayer插件，用于处理静态地图信息
+      #   plugin: "nav2_costmap_2d::VoxelLayer"
+      #   enabled: True
+      #   publish_voxel_map: True
+      #   origin_z: -0.55
+      #   z_resolution: 0.05
+      #   z_voxels: 16
+      #   min_obstacle_height: 1.0
+      #   max_obstacle_height: 1.0
+      #   mark_threshold: 0
+      #   observation_sources: pointcloud
+      #   pointcloud:
+      #     topic: /segmentation/obstacle
+      #     min_obstacle_height: -1.0
+      #     max_obstacle_height: 1.0
+      #     clearing: True
+      #     marking: True
+      #     data_type: "PointCloud2"
+      #     raytrace_max_range: 5.0
+      #     raytrace_min_range: 0.0
+      #     obstacle_max_range: 3.0
+      #     obstacle_min_range: 0.0
       static_layer:
-        map_subscribe_transient_local: True  # 启用临时本地订阅，表示动态获取地图信息
-
-      always_send_full_costmap: True  # 是否总是发送完整的代价地图，通常为了减少传输的频率
+        map_subscribe_transient_local: True
+      always_send_full_costmap: True
 
   # 代价地图客户端
   local_costmap_client:
@@ -277,76 +279,41 @@ local_costmap:
     ros__parameters:
       use_sim_time: False  # 是否使用仿真时间，通常在仿真环境中为True。设置为False表示使用系统时间
 
-
-
-
 global_costmap:
   global_costmap:
     ros__parameters:
-      update_frequency: 5.0  # 更新频率，单位为Hz，控制全局代价地图更新的频率
-      publish_frequency: 5.0  # 发布频率，单位为Hz，控制全局代价地图发布的频率
-      transform_tolerance: 0.5
-
-      global_frame: map  # 全局坐标系，这里设置为"map"表示全局地图坐标系
-      robot_base_frame: base_link  # 机器人本体坐标系，这里使用"base_link"s
-      use_sim_time: False  # 使用仿真时间，在仿真环境中通常为True
-      robot_radius: 0.25  # 机器人半径，单位为米，用于考虑机器人的尺寸
-      resolution: 0.05  # 全局代价地图的分辨率，单位为米，表示每个网格的大小
-      track_unknown_space: false  # 是否跟踪未知空间，启用时代价地图会填充未知空间
-      plugins: ["static_layer", "obstacle_layer", "voxel_layer", "inflation_layer"]  # 使用的插件列表，包含静态层、障碍物层、体素层和膨胀层
-
-      # ObstacleLayer插件，用于检测并标记障碍物
+      update_frequency: 5.0
+      publish_frequency: 5.0
+      global_frame: map
+      robot_base_frame: base_link
+      use_sim_time: False
+      robot_radius: 0.25
+      resolution: 0.05
+      track_unknown_space: false
+      plugins: ["static_layer", "obstacle_layer", "inflation_layer"]
       obstacle_layer:
-        plugin: "nav2_costmap_2d::ObstacleLayer"  # 使用的插件类型
-        enabled: True  # 启用障碍物层
-        footprint_clearing_enabled: True
-        observation_sources: scan  # 是类型 从合并的激光扫描数据中获取障碍物信息
+        plugin: "nav2_costmap_2d::ObstacleLayer"
+        enabled: True
+        observation_sources: scan
         scan:
-          topic: /merged_scan  # 激光扫描数据的主题
-          max_obstacle_height: 1.5 # 障碍物的最大高度，超过此高度的物体不会被认为是障碍物
-          clearing: True  # 启用清除，表示障碍物被移除后，地图中的代价也会被清除
-          marking: True  # 启用标记，表示障碍物会被标记在代价地图中
-          data_type: "LaserScan"  # 数据类型，这里使用"LaserScan"
-          raytrace_max_range: 3.0  # 光线追踪的最大范围
-          raytrace_min_range: 0.0  # 光线追踪的最小范围
-          obstacle_max_range: 2.5  # 障碍物检测的最大有效范围
-          obstacle_min_range: 0.0  # 障碍物检测的最小有效范围
-
-      # VoxelLayer插件，用于根据扫描数据创建体素地图
-      voxel_layer:
-        plugin: "nav2_costmap_2d::VoxelLayer"  # 使用的插件类型
-        enabled: True  # 启用体素层
-        publish_voxel_map: True  # 发布体素地图
-        origin_z: 0.0  # 体素地图的原点高度，通常为0
-        z_resolution: 0.05  # 体素的Z轴分辨率，控制体素的高度分辨率
-        z_voxels: 16  # Z轴体素的数量，控制体素在垂直方向上的分辨率
-        max_obstacle_height: 1.0  # 体素层中障碍物的最大高度，超过此高度的物体不会被认为是障碍物
-        mark_threshold: 0  # 用于标记障碍物的阈值
-        observation_sources: scan  # 从哪个数据源获取障碍物信息，这里是合并扫描数据
-        footprint_clearing_enabled: True
-        scan:
-          topic: /merged_scan  # 激光扫描数据的主题
-          max_obstacle_height: 0.5  # 设置最大障碍物高度
-          clearing: True  # 启用清除
-          marking: false  # 启用标记
-          data_type: "LaserScan"  # 数据类型
-          raytrace_max_range: 3.0  # 光线追踪的最大范围
-          raytrace_min_range: 0.0  # 光线追踪的最小范围
-          obstacle_max_range: 2.5  # 障碍物检测的最大有效范围
-          obstacle_min_range: 0.0  # 障碍物检测的最小有效范围
-
-      # StaticLayer插件，用于处理静态地图信息
+          topic: /merged_scan
+          # sensor_frame: livox_frame
+          max_obstacle_height: 2.0
+          clearing: True
+          marking: True
+          data_type: "LaserScan"
+          raytrace_max_range: 3.0
+          raytrace_min_range: 1.0
+          obstacle_max_range: 2.5
+          obstacle_min_range: 1.0
       static_layer:
-        plugin: "nav2_costmap_2d::StaticLayer"  # 使用的插件类型
-        map_subscribe_transient_local: True  # 启用临时本地订阅，表示动态获取地图信息
-
-      # InflationLayer插件，用于扩展障碍物的影响区域
+        plugin: "nav2_costmap_2d::StaticLayer"
+        map_subscribe_transient_local: True
       inflation_layer:
-        plugin: "nav2_costmap_2d::InflationLayer"  # 使用的插件类型
-        cost_scaling_factor: 10.0 # 代价扩展因子，控制障碍物周围区域的代价值
-        inflation_radius: 0.8  # 膨胀半径，用于控制障碍物周围区域的扩展距离
-
-      always_send_full_costmap: True  # 是否总是发送完整的代价地图，通常为了减少传输的频率
+        plugin: "nav2_costmap_2d::InflationLayer"
+        cost_scaling_factor: 10.0
+        inflation_radius: 0.8 #0.55
+      always_send_full_costmap: True
 
   # 代价地图客户端
   global_costmap_client:
@@ -356,65 +323,103 @@ global_costmap:
   # 代价地图节点
   global_costmap_rclcpp_node:
     ros__parameters:
-      use_sim_time: False  # 是否使用仿真时间，通常在仿真环境中为True。设置为False表示使用系统时间
-
-
+      use_sim_time: False  # 是否使用仿真时间，通常在仿真环境中为True。设置为False表示使用系统时
 map_server:
-  ros__parameters:
-    use_sim_time: False  # 是否使用仿真时间，通常为False表示使用系统时间
-    yaml_filename: "map.yaml"  # 地图文件的路径，存储在yaml文件中的地图信息（如占据网格等）
+  ros__parameters :
+    use_sim_time: False
+    # Overridden in launch by the "map" launch configuration or provided default value.
+    # To use in yaml, remove the default "map" value in the tb3_simulation_launch.py file & provide full path to map below.
+    yaml_filename: "slam_map.yaml"
 
 map_saver:
   ros__parameters:
-    use_sim_time: False  # 是否使用仿真时间，通常为False
-    save_map_timeout: 5.0  # 保存地图的超时时间，单位为秒
-    free_thresh_default: 0.25  # 默认自由空间阈值（0~1之间），低于该值认为是障是碍物
-    occupied_thresh_default: 0.65  # 默认占据空间阈值（0~1之间），高于该值认为是障碍物
-    map_subscribe_transient_local: True  # 是否使用临时本地地图订阅（一般在动态地图时使用）
+    use_sim_time: False
+    save_map_timeout: 5.0
+    free_thresh_default: 0.25
+    occupied_thresh_default: 0.65
+    map_subscribe_transient_local: True
 
 planner_server:
   ros__parameters:
-    expected_planner_frequency: 10.0  # 期望的规划器频率，单位为Hz
-    use_sim_time: False  # 是否使用仿真时间，通常为FalseGoalAlign
-    planner_plugins: ["GridBased"]  # 使用的规划插件，这里使用网格基础的规划
+    expected_planner_frequency: 10.0
+    use_sim_time: False
+    planner_plugins: ["GridBased"]
     GridBased:
-      plugin: "nav2_navfn_planner/NavfnPlanner"  # 使用Navfn规划器插件
-      tolerance: 0.5  # 路径规划的目标容忍度，单位为米，表示目标位置的误差
-      use_astar: false  # 是否使用A*算法，设置为false使用Dijkstra算法
-      allow_unknown: true  # 是否允许规划路径穿过未知区域
+      plugin: "nav2_navfn_planner/NavfnPlanner"
+      tolerance: 0.5
+      use_astar: false
+      allow_unknown: true
 
-planner_server_rclcpp_node:
+smoother_server:
   ros__parameters:
-    use_sim_time: False  # 是否使用仿真时间，通常为False
+    use_sim_time: False
+    smoother_plugins: ["simple_smoother"]
+    simple_smoother:
+      plugin: "nav2_smoother::SimpleSmoother"
+      tolerance: 1.0e-10
+      max_its: 1000
+      do_refinement: True
 
-recoveries_server:
+behavior_server:
   ros__parameters:
-    costmap_topic: local_costmap/costmap_raw  # 代价地图的主题
-    footprint_topic: local_costmap/published_footprint  # 机器人足迹的主题
-    cycle_frequency: 100.0  # 恢复周期频率，单位为Hz
-    recovery_plugins: ["clear_costmap"]  # 只使用清除代价地图插件
-    clear_costmap:
-      plugin: "nav2_recoveries/ClearCostmapRecovery"  # 清除代价地图插件
-    global_frame: odom  # 全局坐标系设置为"odom"
-    robot_base_frame: base_link  # 机器人本体坐标系设置为"base_link"
-    transform_timeout: 0.01  # 坐标变换的超时时间，单位为秒
-    use_sim_time: true  # 是否使用仿真时间
-    simulate_ahead_time: 0.0  # 预模拟时间，用于恢复操作前的预测
-    max_rotational_vel: 0.0  # 最大旋转速度，单位为弧度/秒
-    min_rotational_vel: 0.0  # 最小旋转速度，单位为弧度/秒
-    rotational_acc_lim: 0.0  # 旋转加速度限制，单位为弧度/秒^2
-
+    costmap_topic: local_costmap/costmap_raw
+    footprint_topic: local_costmap/published_footprint
+    cycle_frequency: 10.0
+    behavior_plugins: ["spin", "backup", "drive_on_heading", "assisted_teleop", "wait"]
+    spin:
+      plugin: "nav2_behaviors/Spin"
+    backup:
+      plugin: "nav2_behaviors/BackUp"
+    drive_on_heading:
+      plugin: "nav2_behaviors/DriveOnHeading"
+    wait:
+      plugin: "nav2_behaviors/Wait"
+    assisted_teleop:
+      plugin: "nav2_behaviors/AssistedTeleop"
+    global_frame: odom
+    robot_base_frame: base_link
+    transform_tolerance: 0.1
+    use_sim_time: False
+    simulate_ahead_time: 2.0
+    max_rotational_vel: 0.8
+    min_rotational_vel: 0.3
+    rotational_acc_lim: 3.2
 
 robot_state_publisher:
   ros__parameters:
-    use_sim_time: False  # 是否使用仿真时间，通常为False
+    use_sim_time: False
 
 waypoint_follower:
   ros__parameters:
-    loop_rate: 2000  # 循环频率，单位为Hz，用于跟踪航点
-    stop_on_failure: false  # 是否在失败时停止，设置为false表示失败时不会停止
-    waypoint_task_executor_plugin: "wait_at_waypoint"  # 定义航点任务执行器插件
+    use_sim_time: False
+    loop_rate: 20
+    stop_on_failure: false
+    waypoint_task_executor_plugin: "wait_at_waypoint"
     wait_at_waypoint:
-      plugin: "nav2_waypoint_follower::WaitAtWaypoint"  # 等待航点插件
-      enabled: True  # 启用等待航点功能
-      waypoint_pause_duration: 200  # 每个航点的等待时长，单位为秒
+      plugin: "nav2_waypoint_follower::WaitAtWaypoint"
+      enabled: True
+      waypoint_pause_duration: 200
+
+velocity_smoother:
+  ros__parameters:
+    use_sim_time: False
+    smoothing_frequency: 30.0
+    scale_velocities: False
+    feedback: "CLOSED_LOOP"
+    max_velocity: [2.5, 2.5, 12.0]
+    min_velocity: [-2.5, -2.5, -12.0]
+    max_accel: [5.0, 5.0, 15.0]
+    max_decel: [-5.0, -5.0, -15.0]
+    odom_topic: "Odometry"
+    odom_duration: 0.1
+    deadband_velocity: [0.0, 0.0, 0.0]
+    velocity_timeout: 1.0
+    # feedback: "OPEN_LOOP"
+    # max_velocity: [2.0, 0.0, 1.0]
+    # min_velocity: [-2.0, 0.0, -1.0]
+    # max_accel: [2.0, 0.0, 1.0]  
+    # max_decel: [-2.0, 0.0, -1.0]
+    # odom_topic: "Odometry"
+    # odom_duration: 0.1
+    # deadband_velocity: [0.0, 0.0, 0.0]
+    # velocity_timeout: 1.0

@@ -1,222 +1,448 @@
-# 机器人配置
-robot_radius: 0.1  # 机器人半径（单位：米），用于确定与障碍物之间必须保持的最小距离，以避免碰撞。
-# footprint: [[x0, y0], [x1, y1], ... [xn, yn]]  # 如果机器人不是圆形的，而是具有多边形的外形，可以在这里定义机器人的足迹（坐标点）。
 
-# 障碍物层配置
-obstacle_layer:
-  # 全局过滤参数
-  max_obstacle_height: 1.0  # 考虑为障碍物的最大高度（单位：米），超过此高度的障碍物将不被纳入考虑。
-  obstacle_range: 2.0  # 机器人探测障碍物的最大范围（单位：米），超出此范围的障碍物将不会被检测。
-  raytrace_range: 3.0  # 用于射线追踪的范围（单位：米），用于检查机器人路径上的障碍物。
-  track_unknown_space: false  # 是否跟踪未知空间。如果设置为true，机器人将不能通过未知区域进行路径规划。
-  footprint_clearing_enabled: false  # 是否启用机器人足迹清除功能。如果为true，机器人移动时会清除其占据的区域。
-  combination_method: 1  # 多种传感器层合并方法。1通常表示选取不同传感器层的最大代价来更新代价图。
-  enabled: true  # 是否启用障碍物层。如果设置为false，障碍物将不会被考虑进代价图中。
+    amcl:
+    ros__parameters:
+        use_sim_time: False
+        alpha1: 0.2
+        alpha2: 0.2
+        alpha3: 0.2
+        alpha4: 0.2
+        alpha5: 0.2
+        base_frame_id: "base_footprint"
+        beam_skip_distance: 0.5
+        beam_skip_error_threshold: 0.9
+        beam_skip_threshold: 0.3
+        do_beamskip: false
+        global_frame_id: "map"
+        lambda_short: 0.1
+        laser_likelihood_max_dist: 2.0
+        laser_max_range: 100.0
+        laser_min_range: -1.0
+        laser_model_type: "likelihood_field"
+        max_beams: 60
+        max_particles: 2000
+        min_particles: 500
+        odom_frame_id: "odom"
+        pf_err: 0.05
+        pf_z: 0.99
+        recovery_alpha_fast: 0.0
+        recovery_alpha_slow: 0.0
+        resample_interval: 1
+        robot_model_type: "nav2_amcl::OmniMotionModel"
+        save_pose_rate: 0.5
+        sigma_hit: 0.2
+        tf_broadcast: true
+        transform_tolerance: 1.0
+        update_min_a: 0.2
+        update_min_d: 0.25
+        z_hit: 0.5
+        z_max: 0.05
+        z_rand: 0.5
+        z_short: 0.05
+        scan_topic: scan
 
-# 传感器管理参数
-observation_sources: scan  # 指定用于检测障碍物的传感器数据来源。这里使用的是 "scan" 主题（LaserScan 数据）。
-# LaserScan 数据的具体配置
-  scan:
-    data_type: LaserScan  # 指定传感器数据类型，这里是 LaserScan 类型。
-    topic: scan  # 指定传感器数据发布的主题。
-    observation_persistence: 0  # 观测数据在代价图中保留的时间（单位：秒）。0表示数据会一直保留，直到有新的数据到达。
-    expected_update_rate: 0  # 期望的传感器数据更新频率（单位：Hz）。0表示没有特别的更新频率要求。
-    marking: true  # 如果为true，探测到的障碍物将在代价图中标记出来。
-    clearing: true  # 如果为true，障碍物移除后，机器人移动的区域会在代价图中清除。
-    min_obstacle_height: 0.05  # 障碍物的最小高度（单位：米），小于此高度的障碍物将被忽略。
-    max_obstacle_height: 0.5  # 障碍物的最大高度（单位：米），高于此高度的障碍物将被忽略。
-    obstacle_range: 2.0  # 激光扫描探测障碍物的最大距离（单位：米）。
-    raytrace_range: 3.0  # 激光扫描射线追踪的最大范围（单位：米）。
-    inf_is_valid: false  # 是否将激光扫描中探测到的无限距离（即未探测到障碍物）视为有效观测。如果为false，表示无限距离的探测结果不视为有效。
+    bt_navigator:
+    ros__parameters:
+        use_sim_time: False
+        global_frame: map
+        robot_base_frame: base_link
+        odom_topic: /odom
+        bt_loop_duration: 10
+        default_server_timeout: 20
+        # 'default_nav_through_poses_bt_xml' and 'default_nav_to_pose_bt_xml' are use defaults:
+        # nav2_bt_navigator/navigate_to_pose_w_replanning_and_recovery.xml
+        # nav2_bt_navigator/navigate_through_poses_w_replanning_and_recovery.xml
+        # They can be set here or via a RewrittenYaml remap from a parent launch file to Nav2.
+        plugin_lib_names:
+        - nav2_compute_path_to_pose_action_bt_node
+        - nav2_compute_path_through_poses_action_bt_node
+        - nav2_smooth_path_action_bt_node
+        - nav2_follow_path_action_bt_node
+        - nav2_spin_action_bt_node
+        - nav2_wait_action_bt_node
+        - nav2_assisted_teleop_action_bt_node
+        - nav2_back_up_action_bt_node
+        - nav2_drive_on_heading_bt_node
+        - nav2_clear_costmap_service_bt_node
+        - nav2_is_stuck_condition_bt_node
+        - nav2_goal_reached_condition_bt_node
+        - nav2_goal_updated_condition_bt_node
+        - nav2_globally_updated_goal_condition_bt_node
+        - nav2_is_path_valid_condition_bt_node
+        - nav2_initial_pose_received_condition_bt_node
+        - nav2_reinitialize_global_localization_service_bt_node
+        - nav2_rate_controller_bt_node
+        - nav2_distance_controller_bt_node
+        - nav2_speed_controller_bt_node
+        - nav2_truncate_path_action_bt_node
+        - nav2_truncate_path_local_action_bt_node
+        - nav2_goal_updater_node_bt_node
+        - nav2_recovery_node_bt_node
+        - nav2_pipeline_sequence_bt_node
+        - nav2_round_robin_node_bt_node
+        - nav2_transform_available_condition_bt_node
+        - nav2_time_expired_condition_bt_node
+        - nav2_path_expiring_timer_condition
+        - nav2_distance_traveled_condition_bt_node
+        - nav2_single_trigger_bt_node
+        - nav2_goal_updated_controller_bt_node
+        - nav2_is_battery_low_condition_bt_node
+        - nav2_navigate_through_poses_action_bt_node
+        - nav2_navigate_to_pose_action_bt_node
+        - nav2_remove_passed_goals_action_bt_node
+        - nav2_planner_selector_bt_node
+        - nav2_controller_selector_bt_node
+        - nav2_goal_checker_selector_bt_node
+        - nav2_controller_cancel_bt_node
+        - nav2_path_longer_on_approach_bt_node
+        - nav2_wait_cancel_bt_node
+        - nav2_spin_cancel_bt_node
+        - nav2_back_up_cancel_bt_node
+        - nav2_assisted_teleop_cancel_bt_node
+        - nav2_drive_on_heading_cancel_bt_node
+        - nav2_is_battery_charging_condition_bt_node
 
-# 静态障碍物层配置（固定障碍物，如墙壁等）
-static_layer:
-  enabled: true  # 是否启用静态障碍物层。如果为false，静态障碍物不会被包含在代价图中。
+    bt_navigator_navigate_through_poses_rclcpp_node:
+    ros__parameters:
+        use_sim_time: False
 
+    bt_navigator_navigate_to_pose_rclcpp_node:
+    ros__parameters:
+        use_sim_time: False
 
+    controller_server:
+    ros__parameters:
+        use_sim_time: False
+        controller_frequency: 30.0
+        min_x_velocity_threshold: 0.001
+        min_y_velocity_threshold: 0.5
+        min_theta_velocity_threshold: 0.5
+        failure_tolerance: 0.5
+        progress_checker_plugin: "progress_checker"
+        goal_checker_plugins: ["general_goal_checker"] # "precise_goal_checker"
+        controller_plugins: ["FollowPath"]
 
-#include <rclcpp/rclcpp.hpp>
-#include <sensor_msgs/msg/laser_scan.hpp>
-#include <sensor_msgs/msg/point_cloud2.hpp>
-#include <laser_geometry/laser_geometry.hpp>
-#include <pcl_conversions/pcl_conversions.h>
-#include <pcl/filters/voxel_grid.h>  // 引入体素网格滤波器
-#include <pcl/filters/crop_box.h>
-#include <pcl/point_types.h>
-#include <pcl/point_cloud.h>
-#include <pcl/common/transforms.h>
-#include <Eigen/Dense>
-
-class LaserScanMerger : public rclcpp::Node {
-public:
-    LaserScanMerger() : Node("laser_scan_merger") {
-        // 订阅两个 LaserScan 话题
-        scan1_sub_ = this->create_subscription<sensor_msgs::msg::LaserScan>(
-            "/scan1", 10, std::bind(&LaserScanMerger::scan1Callback, this, std::placeholders::_1));
-        scan2_sub_ = this->create_subscription<sensor_msgs::msg::LaserScan>(
-            "/scan2", 10, std::bind(&LaserScanMerger::scan2Callback, this, std::placeholders::_1));
-
-        // 发布合并后的 LaserScan 话题
-        scan_pub_ = this->create_publisher<sensor_msgs::msg::LaserScan>("/merged_scan", 10);
-        point_cloud_1_pub_ = this->create_publisher<sensor_msgs::msg::PointCloud2>("/point_cloud_1", 10);
-        point_cloud_2_pub_ = this->create_publisher<sensor_msgs::msg::PointCloud2>("/point_cloud_2", 10);
-        point_cloud_merged_pub_ = this->create_publisher<sensor_msgs::msg::PointCloud2>("/point_cloud_merged", 10);
-    }
-
-private:
-    void transformPointCloud(pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud, double x_offset, double y_offset, double z_offset) {
-        for (auto& point : cloud->points) {
-            point.x += x_offset;
-            point.y += y_offset;
-            point.z += z_offset;
-        }
-    }
-
-    // 回调函数，处理第一个 LaserScan 话题
-    void scan1Callback(const sensor_msgs::msg::LaserScan::SharedPtr scan1) {
-        projector_.projectLaser(*scan1, cloud1_);  // 将 LaserScan 转换为 PointCloud2
-        pcl::fromROSMsg(cloud1_, *pcl_cloud1_);    // 将 PointCloud2 转换为 PCL 点云
-        point_cloud_1_pub_->publish(cloud1_);
+        # Progress checker parameters
+        progress_checker:
+        plugin: "nav2_controller::SimpleProgressChecker"
+        required_movement_radius: 0.4
+        movement_time_allowance: 10.0
+        # Goal checker parameters
+        # precise_goal_checker:
+        #  plugin: "nav2_controller::SimpleGoalChecker"
+        #  xy_goal_tolerance: 0.25
+        #  yaw_goal_tolerance: 0.25
+        #  stateful: True
+        general_goal_checker:
+        stateful: True
+        plugin: "nav2_controller::SimpleGoalChecker"
+        xy_goal_tolerance: 0.25
+        yaw_goal_tolerance: 3.14
+        FollowPath:
+        plugin: teb_local_planner::TebLocalPlannerROS
+        teb_autosize: 1.0
+        dt_ref: 0.4
+        dt_hysteresis: 0.04
+        max_samples: 500
+        global_plan_overwrite_orientation: True
+        allow_init_with_backwards_motion: False
+        max_global_plan_lookahead_dist: 7.0
+        global_plan_viapoint_sep: 0.5
+        global_plan_prune_distance: 1.0
+        exact_arc_length: False
+        feasibility_check_no_poses: 0
+        publish_feedback: False
+            
+        # Robot
+                
+        max_vel_x: 1.0
+        max_vel_x_backwards: 0.25
+        max_vel_y: 0.25
+        max_vel_theta: 0.8
+        acc_lim_x: 1.25
+        acc_lim_y: 0.6
+        acc_lim_theta: 1.0
+        min_turning_radius: 0.0 # omni-drive robot (can turn on place!)
+        footprint_model:
+            type: "point"
+        # GoalTolerance
+            
+        xy_goal_tolerance: 0.2
+        yaw_goal_tolerance: 3.14
+        free_goal_vel: False
+        complete_global_plan: True
+            
+        # Obstacles
+            
+        min_obstacle_dist: 0.4 # This value must also include our robot radius, since footprint_model is set to "point".
+        inflation_dist: 0.4
+        include_costmap_obstacles: True
+        costmap_obstacles_behind_robot_dist: 1.0
+        obstacle_poses_affected: 15
+        costmap_converter_plugin: ""
+        costmap_converter_spin_thread: True
+        costmap_converter_rate: 5
+        # Optimization
+            
+        no_inner_iterations: 5
+        no_outer_iterations: 4
+        optimization_activate: True
+        optimization_verbose: False
+        penalty_epsilon: 0.15
+        obstacle_cost_exponent: 4.0
+        weight_max_vel_x: 2.0
+        weight_max_vel_y: 2.0
+        weight_max_vel_theta: 1.0
+        weight_acc_lim_x: 1.0
+        weight_acc_lim_y: 1.0
+        weight_acc_lim_theta: 1.0
+        weight_kinematics_nh: 1.0 # WE HAVE A HOLONOMIC ROBOT, JUST ADD A SMALL PENALTY
+        weight_kinematics_forward_drive: 1000.0
+        weight_kinematics_turning_radius: 1.0
+        weight_optimaltime: 1.0 # must be > 0
+        weight_shortest_path: 0.0
+        weight_obstacle: 100.0
+        weight_inflation: 0.2
+        weight_dynamic_obstacle: 10.0
+        weight_dynamic_obstacle_inflation: 0.2
+        weight_viapoint: 1.0
+        weight_adapt_factor: 2.0
+        # Homotopy Class Planner
+        enable_homotopy_class_planning: True
+        enable_multithreading: True
+        max_number_classes: 4
+        selection_cost_hysteresis: 1.0
+        selection_prefer_initial_plan: 0.9
+        selection_obst_cost_scale: 1.0
+        selection_alternative_time_cost: False
         
-        // 对 scan1 的点云应用体素滤波器
-        pcl::VoxelGrid<pcl::PointXYZ> voxel_filter;
-        pcl::PointCloud<pcl::PointXYZ>::Ptr filtered_cloud(new pcl::PointCloud<pcl::PointXYZ>);
-        voxel_filter.setInputCloud(pcl_cloud1_);
-        voxel_filter.setLeafSize(0.1f, 0.1f, 0.1f);  // 设置体素大小
-        voxel_filter.filter(*filtered_cloud);  // 执行滤波
-
-        pcl_cloud1_ = filtered_cloud;  // 用滤波后的点云替换原点云
-        point_cloud_1_pub_->publish(cloud1_);  // 发布滤波后的点云
-
-        transformPointCloud(pcl_cloud1_, -0.22026, 0.2238, 0.0); // 对点云进行平移变换，x轴向左平移23cm
-        mergeAndPublish();  // 尝试合并点云并发布
-    }
-
-    // 回调函数，处理第二个 LaserScan 话题
-    void scan2Callback(const sensor_msgs::msg::LaserScan::SharedPtr scan2) {
-        // 将 LaserScan 转换为 PointCloud2
-        projector_.projectLaser(*scan2, cloud2_);
-
-        // 将 PointCloud2 转换为 PCL 点云
-        pcl::fromROSMsg(cloud2_, *pcl_cloud2_);
-
-        // 对 scan2 的点云应用体素滤波器
-        pcl::VoxelGrid<pcl::PointXYZ> voxel_filter;
-        pcl::PointCloud<pcl::PointXYZ>::Ptr filtered_cloud(new pcl::PointCloud<pcl::PointXYZ>);
-        voxel_filter.setInputCloud(pcl_cloud2_);
-        voxel_filter.setLeafSize(1.0f, 1.0f, 0.0f);  // 设置体素大小
-        voxel_filter.filter(*filtered_cloud);  // 执行滤波
-
-        pcl_cloud2_ = filtered_cloud;  // 用滤波后的点云替换原点云
-        point_cloud_2_pub_->publish(cloud2_);  // 发布滤波后的点云
-
-        // 创建旋转变换矩阵
-        Eigen::Affine3f transform = Eigen::Affine3f::Identity();
-        transform.rotate(Eigen::AngleAxisf(M_PI, Eigen::Vector3f::UnitZ())); // 绕 Z 轴旋转 180 度
-
-        // 应用旋转变换
-        pcl::transformPointCloud(*pcl_cloud2_, *pcl_cloud2_, transform);
-
-        // 转换回 PointCloud2
-        pcl::toROSMsg(*pcl_cloud2_, cloud2_);
-
-        // 发布点云
-        point_cloud_2_pub_->publish(cloud2_);
-
-        // 尝试合并点云并发布
-        mergeAndPublish();
-    }
-
-    // 合并两个点云并发布为新的 LaserScan
-    void mergeAndPublish() {
-        if (pcl_cloud1_->empty() || pcl_cloud2_->empty()) {
-            return;  // 等待两个点云都接收到后再合并
-        }
-
-        // 合并两个点云
-        pcl::PointCloud<pcl::PointXYZ> merged_pcl_cloud;
-        merged_pcl_cloud += *pcl_cloud1_;
-        merged_pcl_cloud += *pcl_cloud2_;
-
-        // 打印合并后点云的大小
-        RCLCPP_INFO(this->get_logger(), "Before filter Point Cloud size: %zu", merged_pcl_cloud.size());
+        roadmap_graph_no_samples: 15
+        roadmap_graph_area_width: 5.0
+        roadmap_graph_area_length_scale: 1.0
+        h_signature_prescaler: 0.5
+        h_signature_threshold: 0.1
+        obstacle_heading_threshold: 0.45
+        switching_blocking_period: 0.0
+        viapoints_all_candidates: True
+        delete_detours_backwards: True
+        max_ratio_detours_duration_best_duration: 3.0
+        visualize_hc_graph: False
+        visualize_with_time_as_z_axis_scale: 0.0
+        # Recovery
         
-        //滤波器
-        Eigen::Vector4f min_point(-0.4, -0.4, -1000.0, 1.0); // 正方形的最小点 (x_min, y_min, z_min)
-        Eigen::Vector4f max_point(0.40, 0.4, 1000.0, 1.0);    // 正方形的最大点 (x_max, y_max, z_max)
-
-        // 创建CropBox滤波器
-        pcl::CropBox<pcl::PointXYZ> crop_box_filter;
-        crop_box_filter.setInputCloud(merged_pcl_cloud.makeShared());
-        crop_box_filter.setMin(min_point);
-        crop_box_filter.setMax(max_point);
-        crop_box_filter.setNegative(true); // 设置为true以保留不在正方形区域内的点
-
-        // 过滤点云
-        pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_filtered(new pcl::PointCloud<pcl::PointXYZ>);
-        crop_box_filter.filter(merged_pcl_cloud);
-
-        // 打印点云的大小
-        RCLCPP_INFO(this->get_logger(), "Merged Point Cloud size: %zu", merged_pcl_cloud.size());
-
-        // 将合并后的点云转换回 PointCloud2
-        sensor_msgs::msg::PointCloud2 merged_cloud_msg;
-        pcl::toROSMsg(merged_pcl_cloud, merged_cloud_msg);
-        merged_cloud_msg.header = cloud1_.header;  // 保持与第一个点云的时间戳和坐标系一致
-
-        point_cloud_merged_pub_->publish(merged_cloud_msg);
-        // 将合并后的 PointCloud2 转换为 LaserScan
-        sensor_msgs::msg::LaserScan merged_scan;
-        pointcloudToLaserScan(merged_cloud_msg, merged_scan);
-        merged_scan.header.frame_id = "merged_laser";
+        shrink_horizon_backup: True
+        shrink_horizon_min_duration: 10.0
+        oscillation_recovery: True
+        oscillation_v_eps: 0.1
+        oscillation_omega_eps: 0.1
+        oscillation_recovery_min_duration: 10.0
+        oscillation_filter_duration: 10.0
         
-        // 发布合并后的 LaserScan
-        scan_pub_->publish(merged_scan);
-        RCLCPP_INFO(this->get_logger(), "publish merged_scan");
-    }
 
-    // 从 PointCloud2 转换为 LaserScan
-    void pointcloudToLaserScan(const sensor_msgs::msg::PointCloud2& cloud, sensor_msgs::msg::LaserScan& laser_scan) {
-        laser_scan.header = cloud.header;
-        laser_scan.angle_min = -M_PI;
-        laser_scan.angle_max = M_PI;
-        laser_scan.angle_increment = 2 * M_PI / 360; // 假设360度扫描
-        laser_scan.range_min = 0.0;
-        laser_scan.range_max = 360.0;
 
-        laser_scan.ranges.resize(360, std::numeric_limits<float>::infinity());
+    local_costmap:
+    local_costmap:
+        ros__parameters:
+        update_frequency: 50.0
+        publish_frequency: 20.0
+        global_frame: base_footprint
+        robot_base_frame: base_link
+        use_sim_time: False
+        rolling_window: true
+        width: 12
+        height: 12
+        resolution: 0.05
+        robot_radius: 0.35
+        plugins: ["obstacle_layer", "inflation_layer"]
+        inflation_layer:
+            plugin: "nav2_costmap_2d::InflationLayer"
+            cost_scaling_factor: 3.0
+            inflation_radius: 0.35
+        obstacle_layer:
+            plugin: "nav2_costmap_2d::ObstacleLayer"
+            enabled: True
+            observation_sources: livox 
+            max_obstacle_height: 1.0
+            min_obstacle_height: -1.0
+            # rplidar:
+            #   topic: /rplidar/scan
+            #   max_obstacle_height: 1.0
+            #   min_obstacle_height: -1.0
+            #   clearing: True
+            #   marking: True
+            #   data_type: "LaserScan"
+            #   raytrace_max_range: 3.0
+            #   raytrace_min_range: 0.0
+            #   obstacle_max_range: 2.5
+            #   obstacle_min_range: 0.0
+            livox:
+            topic: /scan
+            max_obstacle_height: 1.0
+            min_obstacle_height: -1.0
+            clearing: True
+            marking: True
+            data_type: "LaserScan"
+            raytrace_max_range: 10.0
+            raytrace_min_range: 0.1
+            obstacle_max_range: 10.0
+            obstacle_min_range: 0.2
+        # voxel_layer:
+        #   plugin: "nav2_costmap_2d::VoxelLayer"
+        #   enabled: True
+        #   publish_voxel_map: True
+        #   origin_z: -0.55
+        #   z_resolution: 0.05
+        #   z_voxels: 16
+        #   min_obstacle_height: 1.0
+        #   max_obstacle_height: 1.0
+        #   mark_threshold: 0
+        #   observation_sources: pointcloud
+        #   pointcloud:
+        #     topic: /segmentation/obstacle
+        #     min_obstacle_height: -1.0
+        #     max_obstacle_height: 1.0
+        #     clearing: True
+        #     marking: True
+        #     data_type: "PointCloud2"
+        #     raytrace_max_range: 5.0
+        #     raytrace_min_range: 0.0
+        #     obstacle_max_range: 3.0
+        #     obstacle_min_range: 0.0
+        static_layer:
+            map_subscribe_transient_local: True
+        always_send_full_costmap: True
 
-        pcl::PointCloud<pcl::PointXYZ> pcl_cloud;
-        pcl::fromROSMsg(cloud, pcl_cloud);
+    global_costmap:
+    global_costmap:
+        ros__parameters:
+        update_frequency: 5.0
+        publish_frequency: 5.0
+        global_frame: map
+        robot_base_frame: base_link
+        use_sim_time: False
+        robot_radius: 0.35
+        resolution: 0.05
+        track_unknown_space: true
+        plugins: ["static_layer", "obstacle_layer", "inflation_layer"]
+        obstacle_layer:
+            plugin: "nav2_costmap_2d::ObstacleLayer"
+            enabled: True
+            observation_sources: scan
+            scan:
+            topic: /scan
+            sensor_frame: livox_frame
+            max_obstacle_height: 2.0
+            clearing: True
+            marking: True
+            data_type: "LaserScan"
+            raytrace_max_range: 20.0
+            raytrace_min_range: 1.0
+            obstacle_max_range: 20.0
+            obstacle_min_range: 1.0
+        static_layer:
+            plugin: "nav2_costmap_2d::StaticLayer"
+            map_subscribe_transient_local: True
+        inflation_layer:
+            plugin: "nav2_costmap_2d::InflationLayer"
+            cost_scaling_factor: 3.0
+            inflation_radius: 0.35 #0.55
+        always_send_full_costmap: True
 
-        for (const auto& point : pcl_cloud.points) {
-            float angle = atan2(point.y, point.x);
-            int index = static_cast<int>((angle - laser_scan.angle_min) / laser_scan.angle_increment);
-            if (index >= 0 && index < 360) {
-                float range = sqrt(point.x * point.x + point.y * point.y);
-                if (range < laser_scan.ranges[index]) {
-                    laser_scan.ranges[index] = range;
-                }
-            }
-        }
-    }
+    map_server:
+    ros__parameters :
+        use_sim_time: False
+        # Overridden in launch by the "map" launch configuration or provided default value.
+        # To use in yaml, remove the default "map" value in the tb3_simulation_launch.py file & provide full path to map below.
+        yaml_filename: ""
 
-    rclcpp::Subscription<sensor_msgs::msg::LaserScan>::SharedPtr scan1_sub_;
-    rclcpp::Subscription<sensor_msgs::msg::LaserScan>::SharedPtr scan2_sub_;
-    rclcpp::Publisher<sensor_msgs::msg::LaserScan>::SharedPtr scan_pub_;
-    rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr point_cloud_1_pub_;
-    rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr point_cloud_2_pub_;
-    rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr point_cloud_merged_pub_;
+    map_saver:
+    ros__parameters:
+        use_sim_time: False
+        save_map_timeout: 5.0
+        free_thresh_default: 0.25
+        occupied_thresh_default: 0.65
+        map_subscribe_transient_local: True
 
-    laser_geometry::LaserProjection projector_;
-    sensor_msgs::msg::PointCloud2 cloud1_, cloud2_;
-    pcl::PointCloud<pcl::PointXYZ>::Ptr pcl_cloud1_ = pcl::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
-    pcl::PointCloud<pcl::PointXYZ>::Ptr pcl_cloud2_ = pcl::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
-};
+    planner_server:
+    ros__parameters:
+        expected_planner_frequency: 20.0
+        use_sim_time: False
+        planner_plugins: ["GridBased"]
+        GridBased:
+        plugin: "nav2_navfn_planner/NavfnPlanner"
+        tolerance: 0.5
+        use_astar: false
+        allow_unknown: true
 
-int main(int argc, char **argv) {
-    rclcpp::init(argc, argv);
-    rclcpp::spin(std::make_shared<LaserScanMerger>());
-    rclcpp::shutdown();
-    return 0;
-}
+    smoother_server:
+    ros__parameters:
+        use_sim_time: False
+        smoother_plugins: ["simple_smoother"]
+        simple_smoother:
+        plugin: "nav2_smoother::SimpleSmoother"
+        tolerance: 1.0e-10
+        max_its: 1000
+        do_refinement: True
+
+    behavior_server:
+    ros__parameters:
+        costmap_topic: local_costmap/costmap_raw
+        footprint_topic: local_costmap/published_footprint
+        cycle_frequency: 10.0
+        behavior_plugins: ["spin", "backup", "drive_on_heading", "assisted_teleop", "wait"]
+        spin:
+        plugin: "nav2_behaviors/Spin"
+        backup:
+        plugin: "nav2_behaviors/BackUp"
+        drive_on_heading:
+        plugin: "nav2_behaviors/DriveOnHeading"
+        wait:
+        plugin: "nav2_behaviors/Wait"
+        assisted_teleop:
+        plugin: "nav2_behaviors/AssistedTeleop"
+        global_frame: odom
+        robot_base_frame: base_link
+        transform_tolerance: 0.1
+        use_sim_time: False
+        simulate_ahead_time: 2.0
+        max_rotational_vel: 0.8
+        min_rotational_vel: 0.3
+        rotational_acc_lim: 3.2
+
+    robot_state_publisher:
+    ros__parameters:
+        use_sim_time: False
+
+    waypoint_follower:
+    ros__parameters:
+        use_sim_time: False
+        loop_rate: 20
+        stop_on_failure: false
+        waypoint_task_executor_plugin: "wait_at_waypoint"
+        wait_at_waypoint:
+        plugin: "nav2_waypoint_follower::WaitAtWaypoint"
+        enabled: True
+        waypoint_pause_duration: 200
+
+    velocity_smoother:
+    ros__parameters:
+        use_sim_time: False
+        smoothing_frequency: 30.0
+        scale_velocities: False
+        feedback: "CLOSED_LOOP"
+        max_velocity: [2.5, 2.5, 12.0]
+        min_velocity: [-2.5, -2.5, -12.0]
+        max_accel: [5.0, 5.0, 15.0]
+        max_decel: [-5.0, -5.0, -15.0]
+        odom_topic: "Odometry"
+        odom_duration: 0.1
+        deadband_velocity: [0.0, 0.0, 0.0]
+        velocity_timeout: 1.0
+        # feedback: "OPEN_LOOP"
+        # max_velocity: [2.0, 0.0, 1.0]
+        # min_velocity: [-2.0, 0.0, -1.0]
+        # max_accel: [2.0, 0.0, 1.0]  
+        # max_decel: [-2.0, 0.0, -1.0]
+        # odom_topic: "Odometry"
+        # odom_duration: 0.1
+        # deadband_velocity: [0.0, 0.0, 0.0]
+        # velocity_timeout: 1.0
