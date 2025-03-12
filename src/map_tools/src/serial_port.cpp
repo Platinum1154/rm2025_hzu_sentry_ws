@@ -2,11 +2,15 @@
 #include <vector>
 #include <cstring>
 #include "rclcpp/rclcpp.hpp"
-#include "rm_interfaces/msg/navigation_msg.hpp"
 #include <serial/serial.h>
+
 #include "rm_interfaces/msg/odo_msg.hpp"
 #include "rm_interfaces/msg/serial_receive.hpp"
 #include "rm_interfaces/msg/decision.hpp"
+#include "rm_interfaces/msg/navigation_msg.hpp"
+
+#include "rm_interfaces/msg/armor_tracking.hpp"
+
 #define BAUDRATE 115200
 
 std::atomic_bool receive_thread_running;
@@ -18,8 +22,10 @@ public:
     SerialDriverNode(const char *nodeName) : Node(nodeName)
     {
         // 接收nav/control的数据
-        sub_ = this->create_subscription<rm_interfaces::msg::NavigationMsg>(
+        sub_nav = this->create_subscription<rm_interfaces::msg::NavigationMsg>(
             "/nav/control", 10, std::bind(&SerialDriverNode::callback, this, std::placeholders::_1));
+        sub_vision = this->create_subscription<rm_interfaces::msg::ArmorTracking>(
+            "/tracker/target", 10, std::bind(&SerialDriverNode::callback_vision, this, std::placeholders::_1));
         pub_ = this->create_publisher<rm_interfaces::msg::OdoMsg>("/nav/odo", 10);
         pub_decision_ = this->create_publisher<rm_interfaces::msg::Decision>("nav/decision", 10);
         // 获取串口名称
@@ -123,22 +129,33 @@ private:
 
         while (rclcpp::ok() && send_thread_running.load())
         {
-            second++;
-            if (second > 1000)
+            second_nav++;
+            second_vis++;
+            if (second_nav > 1000)
             {
+                global_send[0] = 0;
+                global_send[1] = 0;
+                global_send[2] = 5; // 巡航死机开小陀螺
+            }
+            if (second_vis > 1000)
+            {
+                global_send[3] = 0;
+                global_send[4] = 0;
+                global_send[5] = 0;
+            }
                 control.push_back((uint8_t)0xA4); // 设置起始字节
-                floatToHexBytes(0, control);
-                floatToHexBytes(0, control);
-                floatToHexBytes(0, control);
-                floatToHexBytes(0, control);
-                floatToHexBytes(0, control);
-                floatToHexBytes(0, control);
+                floatToHexBytes(global_send[0], control);
+                floatToHexBytes(global_send[1], control);
+                floatToHexBytes(global_send[2], control);
+                floatToHexBytes(global_send[3], control);
+                floatToHexBytes(global_send[4], control);
+                floatToHexBytes(global_send[5], control);
                 control.push_back((uint8_t)0x2b); 
-
-                
+            for(int i = 0; i < control.size(); i++){
+                RCLCPP_INFO(this->get_logger(), "send %d: %x", i, control[i]);
             }
             sendCommand();
-            std::this_thread::sleep_for(std::chrono::milliseconds(1)); // 每隔0.004秒发送一次
+            std::this_thread::sleep_for(std::chrono::milliseconds(5)); // 发送频率200Hz
         }
     }
 
@@ -182,19 +199,19 @@ private:
         parsed_uint8s[1] = packet[30]; 
         parsed_uint8s[2] = packet[31];
         // 打印接收到的浮动数
-        RCLCPP_INFO(this->get_logger(), "Received floats: ");
-        for (int i = 0; i < 3; ++i)
-        {
-            RCLCPP_INFO(this->get_logger(), "Float %d: %f", i, parsed_floats[i]);
-        }
-        for (int i = 0; i < 8; ++i)  
-        {
-            RCLCPP_INFO(this->get_logger(), "uint16_t %d: %d", i, parsed_uint16s[i]);
-        }        
-        for (int i = 0; i < 3; ++i)  
-        {
-            RCLCPP_INFO(this->get_logger(), "uint8_t %d: %d", i, parsed_uint8s[i]);
-        }
+        // RCLCPP_INFO(this->get_logger(), "Received floats: ");
+        // for (int i = 0; i < 3; ++i)
+        // {
+        //     RCLCPP_INFO(this->get_logger(), "Float %d: %f", i, parsed_floats[i]);
+        // }
+        // for (int i = 0; i < 8; ++i)  
+        // {
+        //     RCLCPP_INFO(this->get_logger(), "uint16_t %d: %d", i, parsed_uint16s[i]);
+        // }        
+        // for (int i = 0; i < 3; ++i)  
+        // {
+        //     RCLCPP_INFO(this->get_logger(), "uint8_t %d: %d", i, parsed_uint8s[i]);
+        // }
 
 
         // 更新决策信息
@@ -220,40 +237,46 @@ private:
     
     void callback(const rm_interfaces::msg::NavigationMsg::SharedPtr msg)
     {
-        second=0;
-        if(control.size()==13){
-            floatToHexBytes(0, control);
-            floatToHexBytes(0, control);
-            floatToHexBytes(0, control);
-            control.push_back((uint8_t)0x2b); 
-        }
-        if(control.size()<1){
-            control.push_back((uint8_t)0xA4);  // 设置起始字节
-            floatToHexBytes(msg->linear_velocity_x, control);
-            floatToHexBytes(msg->linear_velocity_y, control);
-            floatToHexBytes(55.55, control);
-        }
+        second_nav=0;
+        global_send[0] = msg->linear_velocity_x;
+        global_send[1] = msg->linear_velocity_y;
+        global_send[2] = 5;
+        // if(control.size()==13){
+        //     floatToHexBytes(0, control);
+        //     floatToHexBytes(0, control);
+        //     floatToHexBytes(0, control);
+        //     control.push_back((uint8_t)0x2b); 
+        // }
+        // if(control.size()<1){
+        //     control.push_back((uint8_t)0xA4);  // 设置起始字节
+        //     floatToHexBytes(msg->linear_velocity_x, control);
+        //     floatToHexBytes(msg->linear_velocity_y, control);
+        //     floatToHexBytes(55.55, control);
+        // }
     }
 
-    void callback_vision(const rm_interfaces::msg::NavigationMsg::SharedPtr msg)
+    void callback_vision(const rm_interfaces::msg::ArmorTracking::SharedPtr msg)
     {
-        second=0;
-        if(control.size()<1){
-            control.push_back((uint8_t)0xA4);  // 设置起始字节
-            floatToHexBytes(0, control);
-            floatToHexBytes(0, control);
-            floatToHexBytes(0, control);
-            floatToHexBytes(1.23, control);
-            floatToHexBytes(4.56, control);
-            floatToHexBytes(7.89, control);
-            control.push_back((uint8_t)0x2b); 
-        }
-        else if(control.size()==13){
-            floatToHexBytes(1.23, control);
-            floatToHexBytes(4.56, control);
-            floatToHexBytes(7.89, control);
-            control.push_back((uint8_t)0x2b); 
-        }
+        second_vis=0;
+        global_send[3] = msg->yaw;
+        global_send[4] = msg->pitch;
+        global_send[5] = msg->deep;
+        // if(control.size()<1){
+        //     control.push_back((uint8_t)0xA4);  // 设置起始字节
+        //     floatToHexBytes(0, control);
+        //     floatToHexBytes(0, control);
+        //     floatToHexBytes(0, control);
+        //     floatToHexBytes(msg->yaw, control);
+        //     floatToHexBytes(msg->pitch, control);
+        //     floatToHexBytes(msg->deep, control);
+        //     control.push_back((uint8_t)0x2b); 
+        // }
+        // else if(control.size()==13){
+        //     floatToHexBytes(msg->yaw, control);
+        //     floatToHexBytes(msg->pitch,control);
+        //     floatToHexBytes(msg->deep,control);
+        //     control.push_back((uint8_t)0x2b); 
+        // }
     }
     void floatToHexBytes(float input, std::vector<uint8_t>& output)
     {
@@ -287,7 +310,7 @@ private:
         return crc;
     }
 
-    rclcpp::Subscription<rm_interfaces::msg::NavigationMsg>::SharedPtr sub_;
+    rclcpp::Subscription<rm_interfaces::msg::NavigationMsg>::SharedPtr sub_nav;    rclcpp::Subscription<rm_interfaces::msg::ArmorTracking>::SharedPtr sub_vision;
     std::vector<uint8_t> control;
     rclcpp::Publisher<rm_interfaces::msg::OdoMsg>::SharedPtr pub_;
     rclcpp::Publisher<rm_interfaces::msg::Decision>::SharedPtr pub_decision_;
@@ -295,9 +318,10 @@ private:
     rm_interfaces::msg::Decision decision;
     serial::Serial serial_port_;
     std::string _port_name;
-    volatile long second = 0;
+    volatile long second_nav = 0, second_vis = 0;
     std::thread receive_thread_;
     std::thread send_thread_;
+    float global_send[6];
 };
 
 int main(int argc, char **argv)
