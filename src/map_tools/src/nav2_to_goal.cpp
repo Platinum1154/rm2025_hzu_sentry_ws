@@ -10,12 +10,12 @@
 using NavigationAction = nav2_msgs::action::NavigateToPose; // 定义导航动作类型为NavigateToPose
 volatile int naving_flag = 0;                               // 是否在导航
 volatile int nav_statue = 0;
-// 设定目标点坐标（示例值）
-float target_x = -7.279947020176306f;                                                 // 目标点x坐标
-float target_y = 0.7360424262494546f;                                                 // 目标点y坐标
-// 返回补给点（补给点坐标待定）
-float supply_x = -0.22028685810277354f;                                               // 补给点x坐标（示例值）
-float supply_y = 0.1153494676282539f;                                                 // 补给点y坐标（示例值）
+// 中心增益点
+float target_x = 6.06f;                                                 // 目标点x坐标
+float target_y = -2.56f;                                                 // 目标点y坐标
+// 补给点
+float supply_x = 0.486f;                                               // 补给点x坐标（示例值）
+float supply_y = -0.365f;                                                 // 补给点y坐标（示例值）
 class NavToPoseClient : public rclcpp::Node
 {
 public:
