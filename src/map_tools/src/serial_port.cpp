@@ -79,14 +79,14 @@ private:
                 serial_port_.read(&data, 1);
                 buffer.push_back(data);
                 //1+4+4+4+2*8+1+1=3
-                if (buffer.size() >= 32 && buffer[0] == 0x4A && buffer[31] == 0x2b)  // 校验帧头和包的最小长度
+                if (buffer.size() >= 33 && buffer[0] == 0x4A && buffer[32] == 0x2b)  // 校验帧头和包的最小长度
                 {
                     // for(int i =0;i<32;i++){
                     //     printf("%d:%02x\n",i,buffer[i]);
                     // }
                     // 取出最后两个字节作为 CRC 校验码
                     //uint16_t received_crc = ((uint16_t)buffer[25] << 8) | buffer[26];  // CRC 校验码在最后两位
-                    std::vector<uint8_t> packet(buffer.begin(), buffer.begin() + 31);  // 剩余数据部分
+                    std::vector<uint8_t> packet(buffer.begin(), buffer.begin() + 32);  // 剩余数据部分
                     
                     // 计算 CRC 校验码
                     //uint16_t calculated_crc = calculateCRC16(packet);
@@ -107,7 +107,7 @@ private:
                 {
                     buffer.clear();  // 清除无效数据
                 }
-                else if (buffer.size()>=32 && buffer[31] != 0x2b)
+                else if (buffer.size()>=33 && buffer[32] != 0x2b)
                 {
                     buffer.clear();  // 清除无效数据
                 }
@@ -138,7 +138,7 @@ private:
                 
             }
             sendCommand();
-            std::this_thread::sleep_for(std::chrono::milliseconds(1)); // 每隔0.001秒发送一次
+            std::this_thread::sleep_for(std::chrono::milliseconds(1)); // 每隔0.004秒发送一次
         }
     }
 
@@ -180,6 +180,7 @@ private:
 
         parsed_uint8s[0] = packet[29];  // 解析 match_progress
         parsed_uint8s[1] = packet[30]; 
+        parsed_uint8s[2] = packet[31];
         // 打印接收到的浮动数
         RCLCPP_INFO(this->get_logger(), "Received floats: ");
         for (int i = 0; i < 3; ++i)
@@ -190,7 +191,7 @@ private:
         {
             RCLCPP_INFO(this->get_logger(), "uint16_t %d: %d", i, parsed_uint16s[i]);
         }        
-        for (int i = 0; i < 2; ++i)  
+        for (int i = 0; i < 3; ++i)  
         {
             RCLCPP_INFO(this->get_logger(), "uint8_t %d: %d", i, parsed_uint8s[i]);
         }
@@ -212,6 +213,7 @@ private:
         decision.remain_bullet = parsed_uint16s[7];          // 剩余子弹
         decision.match_progress = parsed_uint8s[0];                // 比赛状况
         decision.occupation = parsed_uint8s[1];              // 事件
+        decision.color = parsed_uint8s[2];              // 事件
         pub_decision_->publish(decision);
     }
     float i = 0;
@@ -219,27 +221,39 @@ private:
     void callback(const rm_interfaces::msg::NavigationMsg::SharedPtr msg)
     {
         second=0;
-        control.push_back((uint8_t)0xA4);  // 设置起始字节
-        floatToHexBytes(msg->linear_velocity_x, control);
-        floatToHexBytes(msg->linear_velocity_y, control);
-        floatToHexBytes(55.55, control);
-        floatToHexBytes(1.23, control);
-        floatToHexBytes(4.56, control);
-        floatToHexBytes(7.89, control);
-        control.push_back((uint8_t)0x2b);  
+        if(control.size()==13){
+            floatToHexBytes(0, control);
+            floatToHexBytes(0, control);
+            floatToHexBytes(0, control);
+            control.push_back((uint8_t)0x2b); 
+        }
+        if(control.size()<1){
+            control.push_back((uint8_t)0xA4);  // 设置起始字节
+            floatToHexBytes(msg->linear_velocity_x, control);
+            floatToHexBytes(msg->linear_velocity_y, control);
+            floatToHexBytes(55.55, control);
+        }
     }
 
     void callback_vision(const rm_interfaces::msg::NavigationMsg::SharedPtr msg)
     {
         second=0;
-        control.push_back((uint8_t)0xA4);  // 设置起始字节
-        floatToHexBytes(msg->linear_velocity_x, control);
-        floatToHexBytes(msg->linear_velocity_y, control);
-        floatToHexBytes(55.55, control);
-        floatToHexBytes(1.23, control);
-        floatToHexBytes(4.56, control);
-        floatToHexBytes(7.89, control);
-        control.push_back((uint8_t)0x2b); 
+        if(control.size()<1){
+            control.push_back((uint8_t)0xA4);  // 设置起始字节
+            floatToHexBytes(0, control);
+            floatToHexBytes(0, control);
+            floatToHexBytes(0, control);
+            floatToHexBytes(1.23, control);
+            floatToHexBytes(4.56, control);
+            floatToHexBytes(7.89, control);
+            control.push_back((uint8_t)0x2b); 
+        }
+        else if(control.size()==13){
+            floatToHexBytes(1.23, control);
+            floatToHexBytes(4.56, control);
+            floatToHexBytes(7.89, control);
+            control.push_back((uint8_t)0x2b); 
+        }
     }
     void floatToHexBytes(float input, std::vector<uint8_t>& output)
     {
