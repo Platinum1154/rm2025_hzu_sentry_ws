@@ -21,7 +21,6 @@ public:
         sensor_msgs::msg::LaserScan scan;
         nav_msg.linear_velocity_x = msg->linear.x;
         nav_msg.linear_velocity_y = msg->linear.y;
-        nav_msg.angular_velocity_z = msg->angular.z;
         // ... 设置scan消息的各项参数 ...
         pub_->publish(nav_msg);
     }

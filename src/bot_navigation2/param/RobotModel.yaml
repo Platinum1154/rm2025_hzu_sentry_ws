@@ -185,7 +185,7 @@ controller_server:
 
       # 各种评估器的参数设置
       BaseObstacle.scale: 250.0
-      PathAlign.scale: 32.0
+      PathAlign.scale: 64.0
       PathAlign.forward_point_distance: 0.1
       GoalAlign.scale: 24.0
       GoalAlign.forward_point_distance: 0.1
@@ -205,8 +205,8 @@ controller_server_rclcpp_node:
 local_costmap:
   local_costmap:
     ros__parameters:
-      update_frequency: 30.0  # 更新频率，单位为Hz，控制局部代价地图更新的频率
-      publish_frequency: 10.0  # 发布频率，单位为Hz，控制局部代价地图发布的频率
+      update_frequency: 50.0  # 更新频率，单位为Hz，控制局部代价地图更新的频率
+      publish_frequency: 20.0  # 发布频率，单位为Hz，控制局部代价地图发布的频率
       transform_tolerance: 0.5
 
       global_frame: odom  # 设置全局坐标系为"odom"，这通常是里程计坐标系
@@ -216,14 +216,14 @@ local_costmap:
       width: 10  # 局部代价地图的宽度，单位为米
       height: 10  # 局部代价地图的高度，单位为米
       resolution: 0.05  # 局部代价地图的分辨率，单位为米，表示每个网格的大小
-      robot_radius: 0.25  # 机器人半径，单位为米，用于在代价地图中考虑机器人的尺寸
+      robot_radius: 0.3  # 机器人半径，单位为米，用于在代价地图中考虑机器人的尺寸
       plugins: ["obstacle_layer", "inflation_layer"]  # 局部代价地图中使用的插件列表
 
       # InflationLayer插件，用于扩展障碍物的影响区域
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"  # 使用的插件类型
-        inflation_radius: 0.7  # 通常会将障碍物扩展一定的半径，以防止机器人碰撞
-        cost_scaling_factor: 20.0  # 代价扩展因子，控制障碍物周围区域的代价值
+        inflation_radius: 0.6  # 通常会将障碍物扩展一定的半径，以防止机器人碰撞
+        cost_scaling_factor: 10.0  # 代价扩展因子，控制障碍物周围区域的代价值
 
       # ObstacleLayer插件，用于检测并标障碍物
       obstacle_layer:
@@ -343,7 +343,7 @@ global_costmap:
       # InflationLayer插件，用于扩展障碍物的影响区域
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"  # 使用的插件类型
-        cost_scaling_factor: 5.0 # 代价扩展因子，控制障碍物周围区域的代价值
+        cost_scaling_factor: 1.0 # 代价扩展因子，控制障碍物周围区域的代价值
         inflation_radius: 0.82  # 膨胀半径，用于控制障碍物周围区域的扩展距离
 
       always_send_full_costmap: True  # 是否总是发送完整的代价地图，通常为了减少传输的频率

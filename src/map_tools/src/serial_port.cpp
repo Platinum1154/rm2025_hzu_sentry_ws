@@ -10,7 +10,8 @@
 #include "rm_interfaces/msg/navigation_msg.hpp"
 
 #include "rm_interfaces/msg/armor_tracking.hpp"
-
+#include "std_msgs/msg/float32.hpp"
+#include "std_msgs/msg/u_int8.hpp"
 #define BAUDRATE 115200
 
 std::atomic_bool receive_thread_running;
@@ -26,6 +27,13 @@ public:
             "/nav/control", 10, std::bind(&SerialDriverNode::callback, this, std::placeholders::_1));
         sub_vision = this->create_subscription<rm_interfaces::msg::ArmorTracking>(
             "/tracker/target", 10, std::bind(&SerialDriverNode::callback_vision, this, std::placeholders::_1));
+
+        sub_chassis_spin = this->create_subscription<std_msgs::msg::Float32>(
+            "/nav/chassis_spin", 10, std::bind(&SerialDriverNode::callback_chassis_spin, this, std::placeholders::_1));
+
+        sub_gimbal_mode = this->create_subscription<std_msgs::msg::UInt8>(
+            "/nav/gimbal_mode", 10, std::bind(&SerialDriverNode::callback_gimbal_mode, this, std::placeholders::_1));
+
         pub_ = this->create_publisher<rm_interfaces::msg::OdoMsg>("/nav/odo", 10);
         pub_decision_ = this->create_publisher<rm_interfaces::msg::Decision>("nav/decision", 10);
         // 获取串口名称
@@ -150,10 +158,11 @@ private:
                 floatToHexBytes(global_send[3], control);
                 floatToHexBytes(global_send[4], control);
                 floatToHexBytes(global_send[5], control);
+                control.push_back((uint8_t)0x00); 
                 control.push_back((uint8_t)0x2b); 
-            for(int i = 0; i < control.size(); i++){
-                RCLCPP_INFO(this->get_logger(), "send %d: %x", i, control[i]);
-            }
+            // for(int i = 0; i < control.size(); i++){
+            //     RCLCPP_INFO(this->get_logger(), "send %d: %x", i, control[i]);
+            // }
             sendCommand();
             std::this_thread::sleep_for(std::chrono::milliseconds(5)); // 发送频率200Hz
         }
@@ -240,7 +249,8 @@ private:
         second_nav=0;
         global_send[0] = msg->linear_velocity_x;
         global_send[1] = msg->linear_velocity_y;
-        global_send[2] = 5;
+        global_send[2] =1; // 小陀螺（0-100）
+        gimbal_mode = 1;
         // if(control.size()==13){
         //     floatToHexBytes(0, control);
         //     floatToHexBytes(0, control);
@@ -278,6 +288,16 @@ private:
         //     control.push_back((uint8_t)0x2b); 
         // }
     }
+    void callback_chassis_spin(const std_msgs::msg::Float32::SharedPtr msg)
+    {
+
+    }
+
+    void callback_gimbal_mode(const std_msgs::msg::UInt8::SharedPtr msg)
+    {
+
+    }
+
     void floatToHexBytes(float input, std::vector<uint8_t>& output)
     {
         uint8_t bytes[sizeof(float)];
@@ -311,6 +331,8 @@ private:
     }
 
     rclcpp::Subscription<rm_interfaces::msg::NavigationMsg>::SharedPtr sub_nav;    rclcpp::Subscription<rm_interfaces::msg::ArmorTracking>::SharedPtr sub_vision;
+    rclcpp::Subscription<std_msgs::msg::Float32>::SharedPtr sub_chassis_spin;
+    rclcpp::Subscription<std_msgs::msg::UInt8>::SharedPtr sub_gimbal_mode;
     std::vector<uint8_t> control;
     rclcpp::Publisher<rm_interfaces::msg::OdoMsg>::SharedPtr pub_;
     rclcpp::Publisher<rm_interfaces::msg::Decision>::SharedPtr pub_decision_;
@@ -322,6 +344,8 @@ private:
     std::thread receive_thread_;
     std::thread send_thread_;
     float global_send[6];
+    float chassis_spin;
+    uint8_t gimbal_mode;
 };
 
 int main(int argc, char **argv)

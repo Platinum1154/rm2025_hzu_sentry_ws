@@ -6,16 +6,24 @@
 #include <thread>                                // std::this_thread::sleep_for
 #include <chrono>                                // std::chrono::seconds
 #include "rm_interfaces/msg/decision.hpp"
-
+#include "std_msgs/msg/float32.hpp"
+#include "std_msgs/msg/u_int8.hpp"
 using NavigationAction = nav2_msgs::action::NavigateToPose; // 定义导航动作类型为NavigateToPose
 volatile int naving_flag = 0;                               // 是否在导航
 volatile int nav_statue = 0;
+
+float chassis_spin;
+uint8_t gimbal_mode;
+
 // 中心增益点
 float target_x = 6.06f;                                                 // 目标点x坐标
 float target_y = -2.56f;                                                 // 目标点y坐标
 // 补给点
 float supply_x = 0.486f;                                               // 补给点x坐标（示例值）
 float supply_y = -0.365f;                                                 // 补给点y坐标（示例值）
+rclcpp::Publisher<std_msgs::msg::UInt8>::SharedPtr pub_gimbal_mode;
+rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr pub_chassis_spin;
+
 class NavToPoseClient : public rclcpp::Node
 {
 public:
@@ -33,6 +41,8 @@ public:
             "nav/decision", // 替换为实际话题名称
             10,
             std::bind(&NavToPoseClient::decisionCallback, this, std::placeholders::_1));
+            pub_chassis_spin = this->create_publisher<std_msgs::msg::Float32>("/nav/chassis_spin", 10);
+            pub_gimbal_mode = this->create_publisher<std_msgs::msg::UInt8>("/nav/gimbal_mode", 10);
     }
 
     void decisionCallback(const rm_interfaces::msg::Decision::SharedPtr msg)
@@ -105,7 +115,8 @@ int main(int argc, char **argv)
 {
     rclcpp::init(argc, argv);
     auto node = std::make_shared<NavToPoseClient>();
-
+    pub_chassis_spin->publish(std_msgs::msg::Float32());
+    pub_gimbal_mode->publish(std_msgs::msg::UInt8());
     // 等待比赛开始的循环
     while (rclcpp::ok() && node->decision_data_.match_progress != 4)
     {
@@ -152,7 +163,7 @@ int main(int argc, char **argv)
         // 这里假设你有一个方法可以更新决策数据
         // node->updateDecisionData();
         // RCLCPP_INFO(node->get_logger(), "血量：(%d)", node->decision_data_.self_sentry_hp);
-        if (node->decision_data_.self_sentry_hp < 100)
+        if (node->decision_data_.self_sentry_hp < 200)
         {
             nav_statue = 1;
             RCLCPP_INFO(node->get_logger(), "血量低于100，返回补给点(%f, %f)", supply_x, supply_y);
