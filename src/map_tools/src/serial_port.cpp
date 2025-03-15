@@ -154,11 +154,11 @@ private:
                 control.push_back((uint8_t)0xA4); // 设置起始字节
                 floatToHexBytes(global_send[0], control);
                 floatToHexBytes(global_send[1], control);
-                floatToHexBytes(global_send[2], control);
+                floatToHexBytes(chassis_spin, control);
                 floatToHexBytes(global_send[3], control);
                 floatToHexBytes(global_send[4], control);
                 floatToHexBytes(global_send[5], control);
-                control.push_back((uint8_t)0x00); 
+                control.push_back((uint8_t)gimbal_mode); 
                 control.push_back((uint8_t)0x2b); 
             // for(int i = 0; i < control.size(); i++){
             //     RCLCPP_INFO(this->get_logger(), "send %d: %x", i, control[i]);
@@ -290,12 +290,12 @@ private:
     }
     void callback_chassis_spin(const std_msgs::msg::Float32::SharedPtr msg)
     {
-
+        chassis_spin = msg->data;
     }
 
     void callback_gimbal_mode(const std_msgs::msg::UInt8::SharedPtr msg)
     {
-
+        gimbal_mode = msg->data;
     }
 
     void floatToHexBytes(float input, std::vector<uint8_t>& output)

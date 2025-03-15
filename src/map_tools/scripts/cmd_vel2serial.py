@@ -26,13 +26,13 @@ class CmdVel2Serial(Node):
         nav_msg = NavigationMsg()
         nav_msg.linear_velocity_x = msg.linear.x
         nav_msg.linear_velocity_y = msg.linear.y
-        nav_msg.angular_velocity_z = msg.angular.z
+        
         
         # 发布导航消息
         self.publisher_.publish(nav_msg)
 
         # 记录已发布的 NavigationMsg 以便调试
-        self.get_logger().info(f'发布 NavigationMsg: linear({nav_msg.linear_velocity_x}, {nav_msg.linear_velocity_y}), angular({nav_msg.angular_velocity_z})')
+        self.get_logger().info(f'发布 NavigationMsg: linear({nav_msg.linear_velocity_x}, {nav_msg.linear_velocity_y})')
 
 def main(args=None):
     rclpy.init(args=args)
