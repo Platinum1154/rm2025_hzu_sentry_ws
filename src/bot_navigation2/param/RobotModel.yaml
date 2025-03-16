@@ -23,16 +23,16 @@ amcl:
     odom_frame_id: "odom"  # 里程计坐标系的ID
     pf_err: 0.05  # 粒子滤波器的误差容限
     pf_z: 0.99  # 粒子滤波器的置信度阈值
-    recovery_alpha_fast: 0.0  # 快速恢复的alpha值（未启用）
-    recovery_alpha_slow: 0.0  # 慢速恢复的alpha值（未启用）
+    recovery_alpha_fast: 1.0  # 快速恢复的alpha值（未启用）
+    recovery_alpha_slow: 0.001  # 慢速恢复的alpha值（未启用）
     resample_interval: 1  # 重采样间隔，决定多少步后重新采样
     robot_model_type: "nav2_amcl::OmniMotionModel"  # 机器人模型类型，常见的有差分运动模型
     save_pose_rate: 0.5  # 保存位姿的频率（单位：秒）
     sigma_hit: 0.2  # 激光测量模型的“hit”部分标准差
     tf_broadcast: true  # 是否发布TF变换
     transform_tolerance: 0.3  # TF变换的容忍度  -*-*- 可能是tf的有效时间
-    update_min_a: 0.02  # 机器人必须旋转至少0.2弧度才会更新
-    update_min_d: 0.02  # 机器人必须移动至少0.25米才会更新
+    update_min_a: 0.1  # 机器人必须旋转至少0.2弧度才会更新
+    update_min_d: 0.1  # 机器人必须移动至少0.25米才会更新
     z_hit: 0.5  # 激光测量模型的“hit”部分概率
     z_max: 0.05  # 激光测量模型的“max”部分概率
     z_rand: 0.5  # 激光测量模型的“rand”部分概率
@@ -40,9 +40,9 @@ amcl:
     scan_topic: merged_scan  # 激光扫描数据的主题
     set_initial_pose: true  # 是否设置初始位姿
     initial_pose:  # 初始位姿配置
-      x: -0.0119032  # 初始位姿的x坐标
-      y: -0.00386167  # 初始位姿的y坐标
-      yaw: -0.0354927  # 初始位姿的yaw角度
+      x: -0.0  # 初始位姿的x坐标
+      y: 0.0  # 初始位姿的y坐标
+      yaw: 0.0  # 初始位姿的yaw角度
 
 
 

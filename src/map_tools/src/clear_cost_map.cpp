@@ -34,32 +34,32 @@ private:
   // 发送清除代价地图请求的回调函数
   void send_clear_request()
   {
-    RCLCPP_INFO(this->get_logger(), "0\n");
+    // RCLCPP_INFO(this->get_logger(), "0\n");
     // 如果当前请求仍在处理中，跳过新的请求
     if (is_request_in_progress_) {
       return;
     }
-    RCLCPP_INFO(this->get_logger(), "1\n");
+    // RCLCPP_INFO(this->get_logger(), "1\n");
     // 标记请求为正在进行中
     is_request_in_progress_ = true;
-    RCLCPP_INFO(this->get_logger(), "2\n");
+    // RCLCPP_INFO(this->get_logger(), "2\n");
     // 构建请求
     auto request = std::make_shared<nav2_msgs::srv::ClearEntireCostmap::Request>();
-    RCLCPP_INFO(this->get_logger(), "3\n");
+    // RCLCPP_INFO(this->get_logger(), "3\n");
     // 异步发送请求并等待结果
     auto result = client_->async_send_request(request);
     auto result_1 = client_1->async_send_request(request);
-    RCLCPP_INFO(this->get_logger(), "4\n");
+    // RCLCPP_INFO(this->get_logger(), "4\n");
     // 等待结果完成
     //result.wait();
-    RCLCPP_INFO(this->get_logger(), "5\n");
+    // RCLCPP_INFO(this->get_logger(), "5\n");
     // 没有 `status` 字段，只需检查请求是否完成
     // if (result.get()) {
     //   RCLCPP_INFO(this->get_logger(), "Successfully cleared the local costmap.");
     // } else {
     //   RCLCPP_ERROR(this->get_logger(), "Failed to call service clear_entirely_local_costmap.");
     // }
-    RCLCPP_INFO(this->get_logger(), "6\n");
+    // RCLCPP_INFO(this->get_logger(), "6\n");
     // 请求完成，标记请求为已处理
     is_request_in_progress_ = false;
   }

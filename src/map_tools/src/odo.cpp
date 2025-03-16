@@ -13,6 +13,9 @@
 class OdoNode : public rclcpp::Node
 {
 public:
+    volatile float x=0.0,y=0.0;
+    volatile float radians=0.0;
+    volatile double time,last_time;
     OdoNode(const char *nodeName) : Node(nodeName)
     {
         // 接收nav/control的数据
@@ -25,8 +28,6 @@ public:
     ~OdoNode()
     {
     }
-
-private:
     void publishTransform(float x,float y,float radians){
         geometry_msgs::msg::TransformStamped transform;
             transform.header.stamp=this->get_clock()->now();
@@ -40,6 +41,9 @@ private:
             transform.transform.rotation = tf2::toMsg(quat);
             tf_broadcaster_->sendTransform(transform);
     }
+
+private:
+    
     void callback(const rm_interfaces::msg::OdoMsg::SharedPtr msg)
     {
         time = this->get_clock()->now().seconds();
@@ -59,9 +63,6 @@ private:
     rclcpp::Subscription<rm_interfaces::msg::OdoMsg>::SharedPtr sub_;
     std::shared_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
     volatile float vx=0.0,vy=0.0,yaw=0.0;
-    volatile float x=0.0,y=0.0;
-    volatile float radians=0.0;
-    volatile double time,last_time;
     volatile long second = 0;
 };
 
@@ -69,8 +70,16 @@ int main(int argc, char **argv)
 {
     rclcpp::init(argc, argv);
     auto odo_node = std::make_shared<OdoNode>("odo_node");
-
+    while (rclcpp::ok())
+    {
+        if(odo_node->get_clock()->now().seconds() - odo_node->time > 0.5){
+            odo_node->publishTransform(odo_node->x,odo_node->y,odo_node->radians);
+            std::this_thread::sleep_for(std::chrono::milliseconds(1));  //冷却一下
+        }
+        rclcpp::spin_some(odo_node);
+    }
     rclcpp::spin(odo_node);
+    
 
     rclcpp::shutdown();
     return 0;
