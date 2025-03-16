@@ -51,7 +51,7 @@ private:
             y += vy * (time-last_time);
             publishTransform(x,y,radians);
         }
-        RCLCPP_INFO(this->get_logger(),"x:%f, y:%f\n",x,y);
+        // RCLCPP_INFO(this->get_logger(),"x:%f, y:%f\n",x,y);
         last_time = time;
     }
     
