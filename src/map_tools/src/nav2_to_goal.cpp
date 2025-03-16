@@ -17,11 +17,11 @@ auto chassis_spin = std_msgs::msg::Float32();
 auto gimbal_mode = std_msgs::msg::UInt8();
 
 // 中心增益点
-float target_x = 6.06f;                                                 // 目标点x坐标
-float target_y = -2.56f;                                                 // 目标点y坐标
+float target_x = 4.4f;                                                 // 目标点x坐标
+float target_y = -2.4f;                                                 // 目标点y坐标
 // 补给点
-float supply_x = 0.486f;                                               // 补给点x坐标（示例值）
-float supply_y = -0.365f;                                                 // 补给点y坐标（示例值）
+float supply_x = -0.4f;                                               // 补给点x坐标（示例值）
+float supply_y = 0.4f;                                                 // 补给点y坐标（示例值）
 rclcpp::Publisher<std_msgs::msg::UInt8>::SharedPtr pub_gimbal_mode;
 rclcpp::Publisher<std_msgs::msg::Float32>::SharedPtr pub_chassis_spin;
 

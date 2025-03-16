@@ -83,7 +83,7 @@ void mergeAndPublish() {
         merged_pcl_cloud += *pcl_cloud2_;
 
         // 打印合并后点云的大小
-        // RCLCPP_INFO(this->get_logger(), "Before filter Point Cloud size: %zu", merged_pcl_cloud.size());
+        RCLCPP_INFO(this->get_logger(), "Before filter Point Cloud size: %zu", merged_pcl_cloud.size());
         
         //滤波器
         Eigen::Vector4f min_point(-0.35, -0.35, -1000.0, 1.0); // 正方形的最小点 (x_min, y_min, z_min)
@@ -112,7 +112,7 @@ void mergeAndPublish() {
         radius_filter.filter(*cloud_filtered); 
 
         // 输出过滤后的点云大小
-        // RCLCPP_INFO(this->get_logger(), "Filtered Point Cloud size: %zu", cloud_filtered->size());
+        RCLCPP_INFO(this->get_logger(), "Filtered Point Cloud size: %zu", cloud_filtered->size());
 
 
         // 将合并后的点云转换回 PointCloud2
