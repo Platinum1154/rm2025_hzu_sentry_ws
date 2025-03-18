@@ -153,7 +153,7 @@ int main(int argc, char **argv)
             pub_chassis_spin->publish(chassis_spin);
         }
         else{
-            chassis_spin.data = 100;
+            chassis_spin.data = 80;
             pub_chassis_spin->publish(chassis_spin);
         }
         std::this_thread::sleep_for(std::chrono::seconds(1)); // 每隔1秒检查一次
@@ -215,7 +215,7 @@ int main(int argc, char **argv)
             pub_chassis_spin->publish(chassis_spin);
         }
         else{
-            chassis_spin.data = 100;
+            chassis_spin.data = 80;
             pub_chassis_spin->publish(chassis_spin);
         }
         rclcpp::spin_some(node);

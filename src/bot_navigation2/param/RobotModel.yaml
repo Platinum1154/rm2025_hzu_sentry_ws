@@ -136,23 +136,23 @@ controller_server:
       debug_trajectory_details: True  # 是否启用轨迹调试，输出轨迹计算的详细信息
 
       # 速度限制
-      min_vel_x: -0.35  # x轴的最小线速度（米/秒）
-      min_vel_y: -0.35 # y轴的最小线速度（米/秒）
-      max_vel_x: 0.35  # x轴的最大线速度（米/秒）
-      max_vel_y: 0.35  # y轴的最大线速度（米/秒）
+      min_vel_x: -0.55  # x轴的最小线速度（米/秒）
+      min_vel_y: -0.55 # y轴的最小线速度（米/秒）
+      max_vel_x: 0.55  # x轴的最大线速度（米/秒）
+      max_vel_y: 0.55  # y轴的最大线速度（米/秒）
       max_vel_theta: 0.0  # 禁用角速度（全向机器人只依赖于线速度）
 
       min_speed_xy: 0.0  # 最小线速度（米/秒）
-      max_speed_xy: 0.35  # 最大线速度（米/秒）
+      max_speed_xy: 0.5  # 最大线速度（米/秒）
       min_speed_theta: 0.0  # 最小角速度（弧度/秒）
 
       # 加速度和减速度限制
-      acc_lim_x: 20.0  # x轴的加速度限制（米/秒²）
-      acc_lim_y: 20.0 # y轴的加速度限制（米/秒²）
+      acc_lim_x: 30.0  # x轴的加速度限制（米/秒²）
+      acc_lim_y: 30.0 # y轴的加速度限制（米/秒²）
       acc_lim_theta: 0.0  # 对全向机器人，禁用角速度的加速度
 
-      decel_lim_x: -2.5  # x轴的减速度限制（米/秒²）
-      decel_lim_y: -2.5  # y轴的减速度限制（米/秒²）
+      decel_lim_x: -30.0  # x轴的减速度限制（米/秒²）
+      decel_lim_y: -30.0  # y轴的减速度限制（米/秒²）
       decel_lim_theta: 0.0  # 对全向机器人，禁用角速度的减速度
 
       # 速度采样点数
@@ -164,7 +164,7 @@ controller_server:
       sim_time: 2.0   # 每个速度采样点的仿真时间
 
       # 线速度和角速度的精度
-      linear_granularity: 0.05  # 线速度的精度（米/秒）
+      linear_granularity: 0.10  # 线速度的精度（米/秒）
       angular_granularity: 0.025  # 角速度的精度（弧度/秒）
 
       # TF变换的容忍度
