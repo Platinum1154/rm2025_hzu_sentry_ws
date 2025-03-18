@@ -188,7 +188,7 @@ int main(int argc, char **argv)
             pub_chassis_spin->publish(chassis_spin);
         }
         else{
-            chassis_spin.data = 500;
+            chassis_spin.data = 100;
             pub_chassis_spin->publish(chassis_spin);
         }
         rclcpp::spin_some(node);
