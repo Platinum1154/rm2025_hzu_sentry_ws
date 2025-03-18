@@ -15,10 +15,20 @@ volatile int nav_statue = 0;
 
 auto chassis_spin = std_msgs::msg::Float32();
 auto gimbal_mode = std_msgs::msg::UInt8();
+int target_point_num = 0;
 
 // 中心增益点
 float target_x = 4.4f;                                                 // 目标点x坐标
 float target_y = -2.4f;                                                 // 目标点y坐标
+float target_point[8][2] = {{5.03,-1.63},   // 1
+                            {5.04,-2.08},   // 2
+                            {4.75,-2.86},   // 3
+                            {4.15,-2.77},   // 6
+                            {3.37,-2.86},   // 9
+                            {3.54,-2.16},   // 8
+                            {3.61,-1.49},   // 7
+                            {4.23,-1.50},   // 4
+                            };
 // 补给点
 float supply_x = -0.4f;                                               // 补给点x坐标（示例值）
 float supply_y = 0.4f;                                                 // 补给点y坐标（示例值）
@@ -179,8 +189,10 @@ int main(int argc, char **argv)
             gimbal_mode.data = 0;
             pub_gimbal_mode->publish(gimbal_mode);
             // 血量高于100，保持原地；
-            RCLCPP_INFO(node->get_logger(), "血量高于300,去增益点，(%f, %f)", target_x, target_y);
-            node->sendGoal(target_x, target_y); // 调用导航方法
+            target_point_num++;
+            if(target_point_num>=8)target_point_num=0;
+            RCLCPP_INFO(node->get_logger(), "血量高于300,去增益点，(%f, %f)", target_point[target_point_num][0], target_point[target_point_num][1]);
+            node->sendGoal(target_point[target_point_num][0], target_point[target_point_num][1]); // 调用导航方法
         }
         //小陀螺单独控制
         if(node->decision_data_.remain_time > 295 || node->decision_data_.match_progress != 4){
