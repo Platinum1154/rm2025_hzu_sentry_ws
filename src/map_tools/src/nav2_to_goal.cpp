@@ -20,6 +20,7 @@ int target_point_num = 0;
 // 中心增益点
 float target_x = 4.4f;                                                 // 目标点x坐标
 float target_y = -2.4f;                                                 // 目标点y坐标
+float rush[2] ={6.99,-0.2};
 float target_point[8][2] = {{5.03,-1.63},   // 1
                             {5.04,-2.08},   // 2
                             {4.75,-2.86},   // 3
@@ -141,10 +142,24 @@ int main(int argc, char **argv)
         gimbal_mode.data = 0;
         pub_chassis_spin->publish(chassis_spin);
         pub_gimbal_mode->publish(gimbal_mode);
-        RCLCPP_INFO(node->get_logger(), "比赛开始，冲向目标点(%f, %f)", target_x, target_y);
-        node->sendGoal(target_x, target_y); // 调用导航方法
+        RCLCPP_INFO(node->get_logger(), "比赛开始，去前压点(%f, %f)", rush[0], rush[1]);
+        node->sendGoal(rush[0], rush[1]); // 调用导航方法
     }
-
+    while (rclcpp::ok() && node->decision_data_.self_sentry_hp > 200)
+    {
+        //小陀螺单独控制
+        if(node->decision_data_.remain_time > 295 || node->decision_data_.match_progress != 4){
+            chassis_spin.data = 0;
+            pub_chassis_spin->publish(chassis_spin);
+        }
+        else{
+            chassis_spin.data = 100;
+            pub_chassis_spin->publish(chassis_spin);
+        }
+        std::this_thread::sleep_for(std::chrono::seconds(1)); // 每隔1秒检查一次
+        std::cout << "等待前压后的血量低于200..." << std::endl;
+        rclcpp::spin_some(node); // 处理回调
+    }
     // 等待导航完成
     // int timeout = 10; // 超时时间为20秒
 
