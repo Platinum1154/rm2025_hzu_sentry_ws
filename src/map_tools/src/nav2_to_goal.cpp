@@ -142,8 +142,8 @@ int main(int argc, char **argv)
         gimbal_mode.data = 0;
         pub_chassis_spin->publish(chassis_spin);
         pub_gimbal_mode->publish(gimbal_mode);
-        RCLCPP_INFO(node->get_logger(), "比赛开始，去前压点(%f, %f)", rush[0], rush[1]);
-        node->sendGoal(rush[0], rush[1]); // 调用导航方法
+        RCLCPP_INFO(node->get_logger(), "比赛开始，去中心，但是不转(%f, %f)", target_x, target_y);
+        node->sendGoal(target_x, target_y); // 调用导航方法
     }
     while (rclcpp::ok() && node->decision_data_.self_sentry_hp > 200)
     {
