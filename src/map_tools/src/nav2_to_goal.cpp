@@ -15,7 +15,7 @@ volatile int nav_statue = 0;
 
 auto chassis_spin = std_msgs::msg::Float32();
 auto gimbal_mode = std_msgs::msg::UInt8();
-int target_point_num = 0;
+//int target_point_num = 0;
 
 // 中心增益点
 float target_x = 4.4f;                                                 // 目标点x坐标
@@ -135,31 +135,6 @@ int main(int argc, char **argv)
         rclcpp::spin_some(node); // 处理回调
     }
 
-    // 决策逻辑：当比赛开始后，冲向目标点
-    if (node->decision_data_.match_progress == 4)
-    {
-        chassis_spin.data = 0;
-        gimbal_mode.data = 0;
-        pub_chassis_spin->publish(chassis_spin);
-        pub_gimbal_mode->publish(gimbal_mode);
-        RCLCPP_INFO(node->get_logger(), "比赛开始，去中心，但是不转(%f, %f)", target_x, target_y);
-        node->sendGoal(target_x, target_y); // 调用导航方法
-    }
-    while (rclcpp::ok() && node->decision_data_.self_sentry_hp > 200)
-    {
-        //小陀螺单独控制
-        if(node->decision_data_.remain_time > 295 || node->decision_data_.match_progress != 4){
-            chassis_spin.data = 0;
-            pub_chassis_spin->publish(chassis_spin);
-        }
-        else{
-            chassis_spin.data = 80;
-            pub_chassis_spin->publish(chassis_spin);
-        }
-        std::this_thread::sleep_for(std::chrono::seconds(1)); // 每隔1秒检查一次
-        std::cout << "等待前压后的血量低于200..." << std::endl;
-        rclcpp::spin_some(node); // 处理回调
-    }
     // 等待导航完成
     // int timeout = 10; // 超时时间为20秒
 
@@ -204,10 +179,12 @@ int main(int argc, char **argv)
             gimbal_mode.data = 0;
             pub_gimbal_mode->publish(gimbal_mode);
             // 血量高于100，保持原地；
-            target_point_num++;
-            if(target_point_num>=8)target_point_num=0;
-            RCLCPP_INFO(node->get_logger(), "血量高于300,去增益点，(%f, %f)", target_point[target_point_num][0], target_point[target_point_num][1]);
-            node->sendGoal(target_point[target_point_num][0], target_point[target_point_num][1]); // 调用导航方法
+            //target_point_num++;
+            // if(target_point_num>=8)target_point_num=0;
+            // RCLCPP_INFO(node->get_logger(), "血量高于300,去增益点，(%f, %f)", target_point[target_point_num][0], target_point[target_point_num][1]);
+            // node->sendGoal(target_point[target_point_num][0], target_point[target_point_num][1]); // 调用导航方法
+            RCLCPP_INFO(node->get_logger(), "血量高于300,去增益点，(%f, %f)", target_x, target_y);
+            node->sendGoal(target_x, target_y); // 调用导航方法
         }
         //小陀螺单独控制
         if(node->decision_data_.remain_time > 295 || node->decision_data_.match_progress != 4){
