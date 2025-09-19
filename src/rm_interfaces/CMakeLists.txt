@@ -34,7 +34,8 @@ find_package(std_msgs REQUIRED)
 
 rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/ArmorTracking.msg"
-  "msg/ArmorsMsg.msg"
+  "msg/ArmorsCppMsg.msg"
+  "msg/ArmorCppInfo.msg"
   "msg/SerialReceive.msg"
   "msg/NavigationMsg.msg"
   "msg/OdoMsg.msg"

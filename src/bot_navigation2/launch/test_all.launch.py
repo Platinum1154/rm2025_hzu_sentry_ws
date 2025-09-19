@@ -14,7 +14,7 @@ def generate_launch_description():
     map_tools_pkg_share = FindPackageShare(package='map_tools').find('map_tools')
     merged_scan_launch_file_path = os.path.join(map_tools_pkg_share, 'launch', 'merged_scan.launch.py')
     tf_static_launch_file_path = os.path.join(map_tools_pkg_share, 'launch', 'tf_static_launch.py')
-    # amcl_launch_file_path = os.path.join(map_tools_pkg_share, 'launch', 'amcl_launch.py')
+    amcl_launch_file_path = os.path.join(map_tools_pkg_share, 'launch', 'amcl_launch.py')
     
     odometry_pkg_share = FindPackageShare(package='rf2o_laser_odometry').find('rf2o_laser_odometry')
     odometry_launch_file_path = os.path.join(odometry_pkg_share, 'launch', 'rf2o_laser_odometry.launch.py')
@@ -27,8 +27,8 @@ def generate_launch_description():
     ydlidar2_launch_file = IncludeLaunchDescription(PythonLaunchDescriptionSource(ydlidar2_launch_file_path))
     merged_scan_file = IncludeLaunchDescription(PythonLaunchDescriptionSource(merged_scan_launch_file_path))
     tf_static_file = IncludeLaunchDescription(PythonLaunchDescriptionSource(tf_static_launch_file_path))
-    # amcl_file = IncludeLaunchDescription(PythonLaunchDescriptionSource(amcl_launch_file_path))
-    # odometry_file = IncludeLaunchDescription(PythonLaunchDescriptionSource(odometry_launch_file_path))
+    amcl_file = IncludeLaunchDescription(PythonLaunchDescriptionSource(amcl_launch_file_path))
+    odometry_file = IncludeLaunchDescription(PythonLaunchDescriptionSource(odometry_launch_file_path))#記得註釋
     # navigation_file = IncludeLaunchDescription(PythonLaunchDescriptionSource(navigation_launch_file_path))
 
     # navigation_file = IncludeLaunchDescription(
@@ -51,7 +51,7 @@ def generate_launch_description():
     ld.add_action(ydlidar2_launch_file)
     ld.add_action(merged_scan_file)
     ld.add_action(tf_static_file)
-    # ld.add_action(amcl_file)
+    ld.add_action(amcl_file)
     # ld.add_action(odometry_file)
     # ld.add_action(navigation_file)
 

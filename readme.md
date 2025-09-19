@@ -1,6 +1,6 @@
 # 正常启动按顺序开启
 - 上发整合版（无amcl）： 包括 启动一号雷达 、 启动二号雷达 、 启动双雷达数据处理 、 静态坐标系变换 、 开启里程计 (暂时删除同时启动了)
-ros2 launch bot_navigation2 test_all.launch.py
+    ros2 launch bot_navigation2 test_all.launch.py
 
 
 # 建图
@@ -18,7 +18,7 @@ ros2 run nav2_map_server map_saver_cli -t map -f slam_map
 ros2 run map_tools odo
 
 - 导航 
-ros2 launch bot_navigation2 navigation2.launch.py use_sim_time:=False slam:=False map:=/home/morefine/rm2025_hzu_sentry_ws/slam_map.yaml
+ros2 launch bot_navigation2 navigation2.launch.py use_sim_time:=False slam:=False map:=/home/dt46/rm2025_hzu_sentry_ws/slam_map.yaml
 
 - 定点导航
 ros2 run map_tools nav2_to_goal 

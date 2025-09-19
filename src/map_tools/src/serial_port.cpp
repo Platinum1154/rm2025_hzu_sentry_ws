@@ -43,10 +43,15 @@ public:
         try
         {
             serial_port_.setPort(_port_name);
+            //RCLCPP_INFO(this->get_logger(), "setPort");
             serial_port_.setBaudrate(BAUDRATE);
+            //RCLCPP_INFO(this->get_logger(), "setBaudrate");
             serial::Timeout timeout = serial::Timeout::simpleTimeout(500);
+            //RCLCPP_INFO(this->get_logger(), "timeout");
             serial_port_.setTimeout(timeout);
+            //RCLCPP_INFO(this->get_logger(), "setTimeout");
             serial_port_.open();
+            //RCLCPP_INFO(this->get_logger(), "setTimeout");
             RCLCPP_INFO(this->get_logger(), "Serial port opened successfully...");
         }
         catch (const serial::IOException &e)
@@ -269,8 +274,9 @@ private:
     {
         second_vis=0;
         global_send[3] = msg->yaw;
-        global_send[4] = msg->pitch;
-        global_send[5] = msg->deep;
+
+        global_send[4] = -msg->pitch;
+        global_send[5] = msg->shoot_flag;
         // if(control.size()<1){
         //     control.push_back((uint8_t)0xA4);  // 设置起始字节
         //     floatToHexBytes(0, control);
