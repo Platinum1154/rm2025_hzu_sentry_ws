@@ -16,7 +16,20 @@
 
 std::atomic_bool receive_thread_running;
 std::atomic_bool send_thread_running;
-
+typedef enum {
+    CMD_GO_TO_ENEMY = 0X01,
+    CMD_RADICAL,
+    CMD_RADICAL_SHOOT,
+    CMD_MOVE_TO_CENTER,
+    CMD_MOVE_TO_CENTER_SHOOT,
+    CMD_MOVED_CENTER,
+    CMD_MOVED_CENTER_SHOOT,
+    CMD_ENEMY_FAR,
+    CMD_RETURN_HOME,
+    CMD_ENEMY_LOW_HP,
+    CMD_ENEMY_LOW_HP_SHOOT,
+    CMD_CAMERA_FAILURE
+} MiniPC_Command_e;
 class SerialDriverNode : public rclcpp::Node
 {
 public:
@@ -135,7 +148,33 @@ private:
             //std::this_thread::sleep_for(std::chrono::milliseconds(1)); // 减少CPU占用
         }
     }
-
+    
+    void get_control_data()
+    {
+        if(gimbal_mode == CMD_RADICAL )// 适用于仅发送移动数据(CMD_RADICAL,CMD_MOVE_TO_CENTER)
+        {
+            control.push_back((uint8_t)0xA4); // 设置起始字节
+            floatToHexBytes(global_send[0], control);
+            floatToHexBytes(global_send[1], control);
+            control.push_back((uint8_t)0x2b); 
+        }
+        else if(gimbal_mode == CMD_MOVE_TO_CENTER )//适用于仅仅发送弹道数据(CMD_RADICAL_SHOOT,CMD_MOVED_CENTER,CMD_MOVED_CENTER_SHOOT)
+        {
+            control.push_back((uint8_t)0xA4); // 设置起始字节
+            floatToHexBytes(global_send[3], control);
+            floatToHexBytes(global_send[4], control);
+            control.push_back((uint8_t)0x2b);
+        }
+        else if(gimbal_mode == CMD_RADICAL )// 适用于发送移动数据和弹道数据
+        {
+            control.push_back((uint8_t)0xA4); // 设置起始字节
+            floatToHexBytes(global_send[0], control);
+            floatToHexBytes(global_send[1], control);
+            floatToHexBytes(global_send[3], control);
+            floatToHexBytes(global_send[4], control);
+            control.push_back((uint8_t)0x2b);
+        }
+    }
     void sendThread()
     {
         send_thread_running.store(true);
@@ -156,18 +195,20 @@ private:
                 global_send[4] = 0;
                 global_send[5] = 0;
             }
-                control.push_back((uint8_t)0xA4); // 设置起始字节
-                floatToHexBytes(global_send[0], control);
-                floatToHexBytes(global_send[1], control);
-                floatToHexBytes(chassis_spin, control);
-                floatToHexBytes(global_send[3], control);
-                floatToHexBytes(global_send[4], control);
-                floatToHexBytes(global_send[5], control);
-                control.push_back((uint8_t)gimbal_mode); 
-                control.push_back((uint8_t)0x2b); 
+                
+                // control.push_back((uint8_t)0xA4); // 设置起始字节
+                // floatToHexBytes(global_send[0], control);
+                // floatToHexBytes(global_send[1], control);
+                // floatToHexBytes(chassis_spin, control);
+                // floatToHexBytes(global_send[3], control);
+                // floatToHexBytes(global_send[4], control);
+                // floatToHexBytes(global_send[5], control);
+                // control.push_back((uint8_t)gimbal_mode); 
+                // control.push_back((uint8_t)0x2b); 
             // for(int i = 0; i < control.size(); i++){
             //     RCLCPP_INFO(this->get_logger(), "send %d: %x", i, control[i]);
             // }
+            get_control_data();
             sendCommand();
             std::this_thread::sleep_for(std::chrono::milliseconds(5)); // 发送频率200Hz
         }
@@ -255,7 +296,7 @@ private:
         global_send[0] = msg->linear_velocity_x;
         global_send[1] = msg->linear_velocity_y;
         global_send[2] =1; // 小陀螺（0-100）
-        gimbal_mode = 1;
+        // gimbal_mode = 1;
         // if(control.size()==13){
         //     floatToHexBytes(0, control);
         //     floatToHexBytes(0, control);
@@ -301,7 +342,7 @@ private:
 
     void callback_gimbal_mode(const std_msgs::msg::UInt8::SharedPtr msg)
     {
-        gimbal_mode = msg->data;
+        gimbal_mode = static_cast<MiniPC_Command_e>(msg->data);
     }
 
     void floatToHexBytes(float input, std::vector<uint8_t>& output)
@@ -351,7 +392,8 @@ private:
     std::thread send_thread_;
     float global_send[6];
     float chassis_spin;
-    uint8_t gimbal_mode;
+    // uint8_t gimbal_mode;
+    MiniPC_Command_e gimbal_mode;
 };
 
 int main(int argc, char **argv)

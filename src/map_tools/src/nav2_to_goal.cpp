@@ -8,9 +8,25 @@
 #include "rm_interfaces/msg/decision.hpp"
 #include "std_msgs/msg/float32.hpp"
 #include "std_msgs/msg/u_int8.hpp"
+#pragma once
+#include <cstdint>
 using NavigationAction = nav2_msgs::action::NavigateToPose; // 定义导航动作类型为NavigateToPose
 volatile int naving_flag = 0;                               // 是否在导航
 volatile int nav_statue = 0;
+typedef enum {
+    CMD_GO_TO_ENEMY = 0X01,
+    CMD_RADICAL,
+    CMD_RADICAL_SHOOT,
+    CMD_MOVE_TO_CENTER,
+    CMD_MOVE_TO_CENTER_SHOOT,
+    CMD_MOVED_CENTER,
+    CMD_MOVED_CENTER_SHOOT,
+    CMD_ENEMY_FAR,
+    CMD_RETURN_HOME,
+    CMD_ENEMY_LOW_HP,
+    CMD_ENEMY_LOW_HP_SHOOT,
+    CMD_CAMERA_FAILURE
+} MiniPC_Command_e;
 
 
 auto chassis_spin = std_msgs::msg::Float32();
@@ -168,15 +184,16 @@ int main(int argc, char **argv)
         if (node->decision_data_.self_sentry_hp < 200)
         {
             nav_statue = 1;
-            gimbal_mode.data = 0;
+            gimbal_mode.data = static_cast<uint8_t>(CMD_MOVE_TO_CENTER);
             pub_gimbal_mode->publish(gimbal_mode);
             RCLCPP_INFO(node->get_logger(), "血量低于200，返回补给点(%f, %f)", supply_x, supply_y);
             node->sendGoal(supply_x, supply_y); // 调用返回补给点的方法
         }
         else if (node->decision_data_.self_sentry_hp > 300 && node->decision_data_.match_progress == 4)
         {
+            
             nav_statue = 2;
-            gimbal_mode.data = 0;
+            gimbal_mode.data = static_cast<uint8_t>(CMD_RADICAL);
             pub_gimbal_mode->publish(gimbal_mode);
             // 血量高于100，保持原地；
             //target_point_num++;
