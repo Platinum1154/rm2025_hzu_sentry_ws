@@ -151,28 +151,51 @@ private:
     
     void get_control_data()
     {
-        if(gimbal_mode == CMD_RADICAL )// 适用于仅发送移动数据(CMD_RADICAL,CMD_MOVE_TO_CENTER)
+        if(gimbal_mode == CMD_GO_TO_ENEMY || gimbal_mode == CMD_CAMERA_FAILURE )// 适用于仅发送移动数据(CMD_RADICAL,CMD_MOVE_TO_CENTER)
         {
             control.push_back((uint8_t)0xA4); // 设置起始字节
+            control.push_back(static_cast<uint8_t>(gimbal_mode));
             floatToHexBytes(global_send[0], control);
             floatToHexBytes(global_send[1], control);
             control.push_back((uint8_t)0x2b); 
         }
-        else if(gimbal_mode == CMD_MOVE_TO_CENTER )//适用于仅仅发送弹道数据(CMD_RADICAL_SHOOT,CMD_MOVED_CENTER,CMD_MOVED_CENTER_SHOOT)
+        else if(gimbal_mode == CMD_RADICAL || gimbal_mode == CMD_RADICAL_SHOOT || gimbal_mode == CMD_MOVED_CENTER || gimbal_mode == CMD_MOVED_CENTER_SHOOT || gimbal_mode == CMD_ENEMY_LOW_HP || gimbal_mode == CMD_ENEMY_LOW_HP_SHOOT )//适用于仅仅发送弹道数据(CMD_RADICAL_SHOOT,CMD_MOVED_CENTER,CMD_MOVED_CENTER_SHOOT)
         {
             control.push_back((uint8_t)0xA4); // 设置起始字节
+            control.push_back(static_cast<uint8_t>(gimbal_mode));
             floatToHexBytes(global_send[3], control);
             floatToHexBytes(global_send[4], control);
             control.push_back((uint8_t)0x2b);
         }
-        else if(gimbal_mode == CMD_RADICAL )// 适用于发送移动数据和弹道数据
+        else if(gimbal_mode == CMD_MOVE_TO_CENTER || gimbal_mode == CMD_MOVE_TO_CENTER_SHOOT || gimbal_mode == CMD_RETURN_HOME )// 适用于发送移动数据和弹道数据
         {
             control.push_back((uint8_t)0xA4); // 设置起始字节
+            control.push_back(static_cast<uint8_t>(gimbal_mode));
             floatToHexBytes(global_send[0], control);
             floatToHexBytes(global_send[1], control);
             floatToHexBytes(global_send[3], control);
             floatToHexBytes(global_send[4], control);
             control.push_back((uint8_t)0x2b);
+        }
+        else if(gimbal_mode == CMD_ENEMY_FAR )// 追击
+        {
+            control.push_back((uint8_t)0xA4); // 设置起始字节
+            control.push_back(static_cast<uint8_t>(gimbal_mode));
+            floatToHexBytes(global_send[0], control);
+            floatToHexBytes(global_send[3], control);
+            floatToHexBytes(global_send[4], control);
+            control.push_back((uint8_t)0x2b);
+        }
+        else //调试模式，
+        {
+            control.push_back((uint8_t)0xA4); // 设置起始字节
+            control.push_back(static_cast<uint8_t>());//
+            floatToHexBytes(global_send[0], control);
+            floatToHexBytes(global_send[1], control);
+            floatToHexBytes(global_send[3], control);
+            floatToHexBytes(global_send[4], control);
+            floatToHexBytes(global_send[5], control);
+            control.push_back((uint8_t)0x2b); 
         }
     }
     void sendThread()
