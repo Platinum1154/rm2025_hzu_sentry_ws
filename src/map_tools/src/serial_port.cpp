@@ -12,7 +12,7 @@
 #include "rm_interfaces/msg/armor_tracking.hpp"
 #include "std_msgs/msg/float32.hpp"
 #include "std_msgs/msg/u_int8.hpp"
-#define BAUDRATE 115200
+#define BAUDRATE 961200
 
 std::atomic_bool receive_thread_running;
 std::atomic_bool send_thread_running;
