@@ -1,5 +1,5 @@
 ################################################################################
-# Set minimum required version of cmake, project name and compile options
+# Set minimum required version of cmake, project name and compile options sb
 ################################################################################
 cmake_minimum_required(VERSION 3.5)
 project(bot_navigation2)
