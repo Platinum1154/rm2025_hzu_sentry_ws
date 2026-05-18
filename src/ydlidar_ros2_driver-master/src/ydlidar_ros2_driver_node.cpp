@@ -52,6 +52,11 @@ int main(int argc, char *argv[]) {
   node->get_parameter("ignore_array", str_optvalue);
   laser.setlidaropt(LidarPropIgnoreArray, str_optvalue.c_str(), str_optvalue.size());
 
+  //scan
+  std::string  scan = "scan";
+  node->declare_parameter("scan", scan);
+  node->get_parameter("scan", scan);
+
   std::string frame_id = "laser_frame";
   node->declare_parameter("frame_id", frame_id);
   node->get_parameter("frame_id", frame_id);
@@ -157,7 +162,7 @@ int main(int argc, char *argv[]) {
     RCLCPP_ERROR(node->get_logger(), "%s\n", laser.DescribeError());
   }
   
-  auto laser_pub = node->create_publisher<sensor_msgs::msg::LaserScan>("scan", rclcpp::QoS(rclcpp::KeepLast(10)));
+  auto laser_pub = node->create_publisher<sensor_msgs::msg::LaserScan>(scan, rclcpp::QoS(rclcpp::KeepLast(10)));
 
   auto stop_scan_service =
     [&laser](const std::shared_ptr<rmw_request_id_t> request_header,

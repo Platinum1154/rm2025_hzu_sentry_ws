@@ -2,7 +2,7 @@
   ros__parameters:
     angularUpdate: 0.5
     astep: 0.05
-    base_frame: base_link
+    base_frame: base_footprint
     map_frame: map
     odom_frame: odom
     delta: 0.05
@@ -10,7 +10,7 @@
     kernelSize: 1
     lasamplerange: 0.005
     lasamplestep: 0.005
-    linearUpdate: 0.05
+    linearUpdate: 1.0
     llsamplerange: 0.01
     llsamplestep: 0.01
     lsigma: 0.075
